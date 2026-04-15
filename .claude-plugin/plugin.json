@@ -1,0 +1,13 @@
+{
+  "name": "project-scaffolder",
+  "version": "1.1.0",
+  "description": "Automatically generate a complete project knowledge base from a brief — CLAUDE.md, Karpathy-style wiki (21+ pages), vertical skills, guardrails, handoff protocol, and implementation plans. One brief in, entire project structure out. Features 3 interaction modes (Normal/Autopilot/Autonomous) and automatic Caveman token optimization (~65% savings).",
+  "author": "valsecchi75",
+  "homepage": "https://github.com/valsecchi75/project-scaffolder",
+  "skills": [
+    "skills/project-scaffolder/SKILL.md"
+  ],
+  "commands": [
+    "commands/scaffold.md"
+  ]
+}

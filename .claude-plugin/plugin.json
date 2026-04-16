@@ -1,13 +1,17 @@
 {
   "name": "project-scaffolder",
-  "version": "1.2.0",
-  "description": "Automatically generate a complete project knowledge base from a brief — CLAUDE.md, Karpathy-style wiki (21+ pages), vertical skills, guardrails, handoff protocol, and implementation plans. One brief in, entire project structure out. Features 3 interaction modes (Normal/Autopilot/Autonomous), automatic Caveman token optimization (~65% savings), and Karpathy Coding Discipline (behavioral guardrails against over-engineering, silent assumptions, and scope creep).",
+  "version": "2.0.0",
+  "description": "Synaptic Edition — Generate a complete project knowledge base, then orchestrate development with skills that learn, connect, and grow. Scaffolding + Cortex (project leader) + Synapse (learning propagation) + Persona-Lab (user simulation). Skills compound like neurons.",
   "author": "valsecchi75",
   "homepage": "https://github.com/valsecchi75/project-scaffolder",
   "skills": [
-    "skills/project-scaffolder/SKILL.md"
+    "skills/project-scaffolder/SKILL.md",
+    "skills/cortex/SKILL.md",
+    "skills/synapse/SKILL.md",
+    "skills/persona-lab/SKILL.md"
   ],
   "commands": [
-    "commands/scaffold.md"
+    "commands/scaffold.md",
+    "commands/task.md"
   ]
 }

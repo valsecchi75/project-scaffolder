@@ -1,8 +1,8 @@
-# Project Scaffolder
+# Project Scaffolder — Synaptic Edition
 
-**Automatically generate a complete project knowledge base from a single brief.**
+**Skills that learn, connect, and grow — like neurons in a living project.**
 
-One brief in, entire project structure out — CLAUDE.md hub, Karpathy-style wiki (21+ pages), domain-specific vertical skills, guardrails, handoff protocol, and implementation plans. Ready for Claude Code to start building immediately.
+Generate a complete project knowledge base from a single brief, then orchestrate development with an AI project leader, quality pipeline, and skills that compound expertise over time. One brief in, entire project structure out — then every task makes the system smarter.
 
 ---
 
@@ -29,6 +29,38 @@ Project Scaffolder creates a **persistent knowledge layer** that survives betwee
 | **Karpathy Coding Discipline** | [Karpathy's LLM coding pitfalls](https://github.com/forrestchang/andrej-karpathy-skills) | Behavioral guardrails injected into every generated skill and CLAUDE.md: Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution. |
 
 **Result:** The AI agent restarts every session with complete context in seconds, without wasting tokens.
+
+## What's New in v2.0 — Synaptic Edition
+
+v1.x solves the cold-start problem (scaffolding). v2.0 solves the growth problem (development lifecycle).
+
+| Component | What it does |
+|-----------|-------------|
+| **Cortex** (`/task`) | AI project leader — classifies tasks, delegates to specialists, runs QA and user testing, manages the feedback loop |
+| **Synapse** | Nervous system — propagates learning between connected skills, maintains connection map, prevents repeated errors |
+| **Persona-Lab** | Simulated focus group — tests features with diverse user profiles, catches UX issues before release |
+| **QA Agent** | Ephemeral code reviewer — Karpathy compliance, test verification, surgical change validation |
+| **Skill Lifecycle** | Skills grow from Seed → Growing → Mature → Expert as they accumulate real-world experience |
+| **On-demand Skills** | Cortex generates new skills mid-session when a task requires uncovered expertise |
+
+### The Development Pipeline
+
+```
+/task "Implement feature X"
+    │
+    ▼
+CORTEX ── classify ── skill lookup/generate ── delegate to specialist
+    │                                              │
+    │                                    ┌─────────┘
+    │                                    ▼
+    │                              QA AGENT (verify)
+    │                                    │
+    │                              PERSONA-LAB (test)
+    │                                    │
+    │                              SYNAPSE (learn + propagate)
+    │                                    │
+    └◀──────────── task complete ────────┘
+```
 
 ## What It Generates
 
@@ -110,9 +142,9 @@ The scaffolder automatically installs the [Caveman](https://github.com/JuliusBru
 
 Caveman is installed automatically during scaffolding. If already installed, it's skipped. If installation fails (network, permissions), scaffolding continues without it.
 
-## Karpathy Coding Discipline (NEW in v1.2.0)
+## Karpathy Coding Discipline
 
-Inspired by [Andrej Karpathy's observations](https://github.com/forrestchang/andrej-karpathy-skills) on LLM coding pitfalls, v1.2.0 integrates behavioral guardrails at every level of the generated project:
+Inspired by [Andrej Karpathy's observations](https://github.com/forrestchang/andrej-karpathy-skills) on LLM coding pitfalls, the scaffolder integrates behavioral guardrails at every level of the generated project:
 
 | Where | What's Added |
 |-------|-------------|
@@ -252,13 +284,21 @@ Tested on a production mobile app project (Android, Flutter, freemium model):
 ```
 project-scaffolder/
 ├── .claude-plugin/
-│   └── plugin.json           # Plugin metadata
+│   └── plugin.json              # Plugin metadata (v2.0.0)
 ├── commands/
-│   └── scaffold.md           # /scaffold slash command
+│   ├── scaffold.md              # /scaffold — generate project structure
+│   └── task.md                  # /task — assign work to Cortex
 ├── skills/
-│   └── project-scaffolder/
-│       └── SKILL.md          # Main scaffolding skill
-└── README.md                 # This file
+│   ├── project-scaffolder/
+│   │   └── SKILL.md             # Phase 0 scaffolding
+│   ├── cortex/
+│   │   └── SKILL.md             # Project Leader orchestration
+│   ├── synapse/
+│   │   └── SKILL.md             # Learning propagation engine
+│   └── persona-lab/
+│       └── SKILL.md             # End-user simulation
+├── LICENSE
+└── README.md
 ```
 
 ## Contributing

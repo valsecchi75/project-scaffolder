@@ -192,7 +192,23 @@ Run structured brainstorming on:
 3. **Business** — model, pricing, competitive positioning
 4. **Technical** — patterns, conventions, testing strategy, deployment
 
-Output: list of decisions made with alternatives considered.
+### Assumption Surfacing (mandatory sub-step)
+
+After brainstorming, BEFORE proceeding to Phase 3, explicitly list all assumptions made during the session. For each assumption:
+
+| Assumption | Source | Confidence | Tagged |
+|------------|--------|------------|--------|
+| [What was assumed] | [Brief / inferred / convention] | [High/Medium/Low] | `[HYPOTHESIS]` or `[FACT]` |
+
+**Rules:**
+- Every inference not explicitly stated in the user's brief MUST be tagged `[HYPOTHESIS]`.
+- Low-confidence assumptions in Normal/Autopilot mode → ask the user before proceeding.
+- Low-confidence assumptions in Autonomous mode → proceed but document prominently in the design spec.
+- This table is included in the design spec (Phase 3) under a dedicated "Assumptions" section.
+
+**Why:** LLMs make silent assumptions and run with them (Karpathy). Surfacing them prevents building on wrong foundations.
+
+Output: list of decisions made with alternatives considered + assumption table.
 
 ---
 
@@ -207,8 +223,9 @@ Generate `docs/superpowers/specs/YYYY-MM-DD-[project-name]-design.md` with:
 5. Business model (pricing, tiers, conversion strategy)
 6. Roadmap (5-6 phases from foundation to growth)
 7. Constraints and risks
-8. Skill ecosystem (list of skills to generate with justification)
-9. Open decisions (things to resolve in Phase 1)
+8. **Assumptions** (from Phase 2 Assumption Surfacing — full table with confidence levels and tags)
+9. Skill ecosystem (list of skills to generate with justification)
+10. Open decisions (things to resolve in Phase 1)
 
 ---
 
@@ -236,7 +253,7 @@ Launch 3 parallel subagents to create all wiki files simultaneously:
 | `wiki/vision.md` | Product philosophy, guiding principles (5 max), tone of voice |
 | `wiki/log.md` | Changelog with project inception entry |
 | `wiki/glossary.md` | Domain-specific terms (8-12 terms) |
-| `wiki/priorities.md` | Current phase tasks, next steps, blockers |
+| `wiki/priorities.md` | Current phase tasks with **verifiable success criteria**, next steps, blockers |
 | `wiki/handoff.md` | Session state: what was done, what remains, files to read, template |
 
 ### Agent 2 — Technical + Design (7 files)
@@ -272,6 +289,7 @@ Launch 3 parallel subagents to create all wiki files simultaneously:
 - **Tagged.** Use `[FACT]`, `[DECISION]`, `[HYPOTHESIS]`, `[IDEA]`, `[DEPRECATED]` tags.
 - **Decisions documented.** Every decision includes alternatives considered and why chosen.
 - **Templates included.** Debug and incubator files include templates for future entries.
+- **Verifiable tasks.** Every task in priorities.md must include a success criterion. Format: `- [ ] Task description → VERIFY: concrete test or evidence of completion`. Example: `- [ ] Implement login screen → VERIFY: test_login_success passes, screenshot matches mockup`.
 
 ---
 
@@ -283,7 +301,7 @@ Analyze the domain and tech stack to determine which skills are needed.
 
 | Skill | Purpose |
 |-------|---------|
-| `[name]-release-gate` | 5-stage pre-release verification orchestrator |
+| `[name]-release-gate` | 6-stage pre-release verification orchestrator (includes Simplicity Check) |
 | `[name]-brand-voice` | Tone of voice, copy patterns, language rules |
 
 ### By Tech Stack
@@ -345,6 +363,15 @@ description: [When to use this skill — be specific about triggers]
 - Anti-patterns (what NOT to do)
 - Checklists for verification
 - Examples with ✅ good and ❌ bad patterns
+
+## Behavioral Rules (for technical skills only)
+
+> Apply these rules every time you write or modify code in this domain.
+
+1. **State assumptions before coding.** If the task is ambiguous in this domain, list what you're assuming and ask if uncertain.
+2. **Minimum viable implementation.** Use the simplest pattern from this skill that solves the problem. Add complexity only when the requirement demands it.
+3. **Surgical scope.** Changes must stay within the boundary of the current task. Don't refactor adjacent code, even if this skill shows a better pattern for it.
+4. **Verify against this skill's checklist** before declaring the task complete.
 
 ## Common Mistakes
 | Mistake | Fix |
@@ -489,6 +516,31 @@ Files in daily-log/ document daily work.
 - Failures = intelligence (every error deserves an entry)
 - Tag certainty: [FACT], [DECISION], [HYPOTHESIS], [IDEA], [DEPRECATED]
 - Daily log is mandatory
+
+### Coding Discipline (Karpathy Principles)
+
+> Derived from Andrej Karpathy's observations on LLM coding pitfalls.
+
+**1. Think Before Coding**
+- State assumptions explicitly. If uncertain, ask.
+- Surface multiple interpretations rather than choosing silently.
+- When confused, stop and clarify before writing a single line.
+
+**2. Simplicity First**
+- Write only the minimum code that solves the stated problem.
+- No speculative features, no unnecessary abstractions, no premature error handling.
+- Test: "Would a senior engineer call this overcomplicated?" If yes, rewrite.
+
+**3. Surgical Changes**
+- Modify only what is necessary for the current task in priorities.md.
+- Don't improve adjacent code, don't change formatting, don't add unrequested features.
+- Every changed line must trace directly to the current task.
+- Remove only imports/functions YOUR changes made unused.
+
+**4. Goal-Driven Execution**
+- Transform every task into verifiable success criteria BEFORE implementing.
+- For multi-step work, outline steps with corresponding verification checks.
+- Don't declare "done" without evidence (test passes, screenshot, build succeeds).
 ```
 
 ---
@@ -520,6 +572,21 @@ Before declaring scaffolding complete:
 
 ---
 
+## Release-Gate: Simplicity Check (Stage 6)
+
+The generated `[name]-release-gate` skill MUST include a **Simplicity Check** as its final stage. This stage verifies:
+
+| Check | Question | Fail if... |
+|-------|----------|------------|
+| Scope creep | Does the code implement ONLY what was in priorities.md? | There are features, abstractions, or error handling not traced to a task |
+| Over-engineering | Could this be done with significantly less code? | A senior engineer would say "this is overcomplicated" |
+| Dead code | Are there unused imports, functions, or variables? | Any dead code from this release exists |
+| Speculative features | Are there config options, parameters, or flexibility that nobody asked for? | Yes — remove them |
+
+**Pass criteria:** All 4 checks pass. If any fail, fix before release.
+
+---
+
 ## Anti-Patterns
 
 | Don't | Do Instead |
@@ -531,3 +598,6 @@ Before declaring scaffolding complete:
 | Skip the verification phase | Always verify files exist and links resolve |
 | Leave handoff empty | Handoff must list specific Phase 1 tasks |
 | Use English in an Italian project | Match the project's primary language everywhere |
+| Implement speculative features | Write only the minimum code that solves the stated problem (Karpathy) |
+| Make silent assumptions | Surface all assumptions explicitly, tag as `[HYPOTHESIS]` |
+| Improve adjacent code during a fix | Touch only what the current task requires (Surgical Changes) |

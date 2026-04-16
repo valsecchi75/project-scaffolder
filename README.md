@@ -26,6 +26,7 @@ Project Scaffolder creates a **persistent knowledge layer** that survives betwee
 | **Persistent Markdown wiki** | [Andrej Karpathy's gist](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) | Durable project memory: decisions, architecture, errors, priorities. Read automatically every session. |
 | **Vertical skills** | Claude Code skills system | Specialized guides per area (frontend, domain logic, marketing, release). Contain reusable code patterns, rules, checklists. |
 | **Structured handoff** | Original pattern | Session transition protocol that prevents context rot. One phase per chat, wiki as persistent memory. |
+| **Karpathy Coding Discipline** | [Karpathy's LLM coding pitfalls](https://github.com/forrestchang/andrej-karpathy-skills) | Behavioral guardrails injected into every generated skill and CLAUDE.md: Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution. |
 
 **Result:** The AI agent restarts every session with complete context in seconds, without wasting tokens.
 
@@ -108,6 +109,22 @@ The scaffolder automatically installs the [Caveman](https://github.com/JuliusBru
 | Autonomous + Caveman | ~80% total (zero questions + compressed reasoning) |
 
 Caveman is installed automatically during scaffolding. If already installed, it's skipped. If installation fails (network, permissions), scaffolding continues without it.
+
+## Karpathy Coding Discipline (NEW in v1.2.0)
+
+Inspired by [Andrej Karpathy's observations](https://github.com/forrestchang/andrej-karpathy-skills) on LLM coding pitfalls, v1.2.0 integrates behavioral guardrails at every level of the generated project:
+
+| Where | What's Added |
+|-------|-------------|
+| **CLAUDE.md template** | "Coding Discipline" section with 4 principles: Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution |
+| **Phase 2 (Brainstorming)** | Mandatory "Assumption Surfacing" step — all inferences tagged `[HYPOTHESIS]` before proceeding |
+| **Design Spec** | Dedicated "Assumptions" section with confidence levels |
+| **priorities.md** | Every task requires verifiable success criteria (`→ VERIFY: ...`) |
+| **Technical skills** | "Behavioral Rules" section in every generated skill template |
+| **Release-gate** | Stage 6: Simplicity Check — scope creep, over-engineering, dead code, speculative features |
+| **Anti-patterns** | 3 new entries: no speculative features, no silent assumptions, no adjacent code changes |
+
+**Why this matters:** The original Karpathy plugin is a single generic file. Project Scaffolder makes those principles **contextual** — embedded in domain-specific skills, project-specific guardrails, and verifiable at release time.
 
 ## How It Works
 

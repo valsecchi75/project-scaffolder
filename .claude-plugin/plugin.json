@@ -1,17 +1,13 @@
 {
   "name": "project-scaffolder",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Synaptic Edition — Generate a complete project knowledge base, then orchestrate development with skills that learn, connect, and grow. Scaffolding + Cortex (project leader) + Synapse (learning propagation) + Persona-Lab (user simulation). Skills compound like neurons.",
-  "author": "valsecchi75",
+  "author": {
+    "name": "Sergio Valsecchi",
+    "email": "sergio@kframeinteractive.com"
+  },
   "homepage": "https://github.com/valsecchi75/project-scaffolder",
-  "skills": [
-    "skills/project-scaffolder/SKILL.md",
-    "skills/cortex/SKILL.md",
-    "skills/synapse/SKILL.md",
-    "skills/persona-lab/SKILL.md"
-  ],
-  "commands": [
-    "commands/scaffold.md",
-    "commands/task.md"
-  ]
+  "repository": "https://github.com/valsecchi75/project-scaffolder",
+  "license": "MIT",
+  "keywords": ["scaffolding", "wiki", "skills", "orchestration", "synaptic", "karpathy"]
 }

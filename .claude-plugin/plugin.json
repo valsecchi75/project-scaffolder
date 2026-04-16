@@ -1,6 +1,6 @@
 {
   "name": "project-scaffolder",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "Synaptic Edition — Generate a complete project knowledge base, then orchestrate development with skills that learn, connect, and grow. Scaffolding + Cortex (project leader) + Synapse (learning propagation) + Persona-Lab (user simulation). Skills compound like neurons.",
   "author": {
     "name": "Sergio Valsecchi",

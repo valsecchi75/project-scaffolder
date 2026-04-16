@@ -107,6 +107,18 @@ For each persona:
 
 Recurring friction patterns are passed to Synapse for propagation via the learning packet. Example: if the low-tech persona consistently struggles with English terminology, Synapse propagates to the brand-voice skill as reinforcement.
 
+## Logging
+
+After testing, log to `logs/pipeline/YYYY-MM-DD.md` under the PERSONA-LAB section of the current task:
+
+- **Each persona:** Name, archetype, result (PASS/BLOCKED/friction), step where blocked (if applicable)
+- **Verdict:** PASS or FAIL with reasoning
+- **Recurring pattern:** If the same friction appears across personas, note it
+
+On FAIL (blocking issue or 3+ frictions): also log to `logs/errors/YYYY-MM-DD-errors.md` with the specific frictions that caused the failure and feedback sent to specialist.
+
+See `skills/pipeline-logger/SKILL.md` for complete log format.
+
 ## Anti-Patterns
 
 | Don't | Do instead |
@@ -116,3 +128,4 @@ Recurring friction patterns are passed to Synapse for propagation via the learni
 | Flag a friction from 1 persona as blocking | Use majority vote: 2+ personas or 🔴 blocking required |
 | Write vague feedback ("UX is confusing") | Be specific: which step, which text, which persona, why |
 | Test backend-only changes | Skip for non-UX tasks |
+| Skip logging persona results | Always log every persona test for pattern analysis |

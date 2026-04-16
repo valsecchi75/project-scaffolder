@@ -173,6 +173,19 @@ SYNAPSE executes:
 8. UPDATE skills/_synapse-map.md with new propagation entries
 ```
 
+## Logging
+
+After each operation, log to `logs/pipeline/YYYY-MM-DD.md` under the SYNAPSE section of the current task:
+
+- **Operation 1 (Update skill):** Log skill name, maturity change, patterns added, anti-patterns added
+- **Operation 2 (Propagate):** Log each propagation: origin skill → target skill + what was propagated
+- **Operation 3 (Guardrails):** Log ERR-NNN created, skills affected
+- **Operation 4 (Hygiene):** Log summary: N skills, M connections, K propagations
+
+On validation failure (backup restore): log to both pipeline/ and `logs/errors/YYYY-MM-DD-errors.md` with full context (what failed, what was restored).
+
+See `skills/pipeline-logger/SKILL.md` for complete log format.
+
 ## Anti-Patterns
 
 | Don't | Do instead |
@@ -182,3 +195,4 @@ SYNAPSE executes:
 | Skip the backup before rewriting | Always create .history/ backup first |
 | Cascade propagation (A→B→C) | One hop only — B updates are B's responsibility next cycle |
 | Refactor a skill without validation | Always check: entries retained, length >= 80%, frontmatter valid |
+| Skip logging after propagation | Always log every propagation for audit trail |

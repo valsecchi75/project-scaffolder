@@ -235,6 +235,7 @@ Generate `docs/superpowers/specs/YYYY-MM-DD-[project-name]-design.md` with:
 mkdir -p wiki/product wiki/ux wiki/debugging wiki/incubator
 mkdir -p skills/ guardrails/ daily-log/
 mkdir -p docs/superpowers/specs docs/superpowers/plans
+mkdir -p logs/pipeline logs/errors
 ```
 
 ---
@@ -507,6 +508,14 @@ This project uses the **Synaptic Edition** of Project Scaffolder. Use `/task` to
 ```
 
 See [Synapse Map](skills/_synapse-map.md) for skill connections and learning history.
+
+## Pipeline Logs
+
+Every `/task` execution is recorded in `logs/`:
+- `logs/pipeline/YYYY-MM-DD.md` — Full audit trail of every operation (classify, execute, QA, test, learn)
+- `logs/errors/YYYY-MM-DD-errors.md` — Errors only, for fast debugging
+
+See `skills/pipeline-logger/SKILL.md` for log format and analytics queries.
 
 ## Session Rule: One Phase Per Chat
 

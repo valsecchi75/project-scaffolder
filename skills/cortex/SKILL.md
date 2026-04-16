@@ -214,6 +214,28 @@ After all gates pass:
 | Task is architectural/complex | Ask user for confirmation before proceeding |
 | Specialist fails 3 times | Stop, report to user, document failure |
 
+## Logging
+
+Every step in the pipeline MUST be logged using the pipeline-logger skill format.
+
+### At pipeline start
+1. Create log files if they don't exist: `mkdir -p logs/pipeline logs/errors`
+2. Generate task ID: `TASK-YYYY-MM-DD-NNN` (auto-increment NNN per day)
+3. Write the task header block to `logs/pipeline/YYYY-MM-DD.md`
+
+### During execution
+- **After Step 1 (Classify):** Log domain, complexity, skill matched, UX impact, decision
+- **After Step 4 (Specialist):** Log files changed, lines added/removed, test results, status
+- **After Step 5 (QA):** Log each check result (SCOPE, SIMPLICITY, SURGICAL, DEAD CODE, SUCCESS CRITERIA), verdict, feedback if FAIL. On FAIL → also write to `logs/errors/YYYY-MM-DD-errors.md`
+- **After Step 6 (Persona-Lab):** Log each persona result, frictions, verdict. On FAIL → also write to errors log
+- **After Step 7 (Feedback loop):** Log iteration count, rejection reasons
+- **After Step 8 (Close):** Log synapse propagations, skills updated, final outcome, total duration
+
+### On errors
+Any failure at any step → dual log to both pipeline/ and errors/ with cross-reference.
+
+See `skills/pipeline-logger/SKILL.md` for complete log format and templates.
+
 ## Context
 
 This is the central orchestrator skill for the Project Scaffolder v2.0 "Synaptic Edition". It coordinates with three other skills: Synapse (learning propagation), Persona-Lab (user simulation), and the project-scaffolder itself (initial scaffolding). The Cortex is triggered by the /task command.

@@ -282,6 +282,23 @@ Launch 3 parallel subagents to create all wiki files simultaneously:
 | `wiki/incubator/future-directions.md` | 3-4 long-term explorations |
 | `guardrails/errors-to-avoid.md` | Template + any errors encountered during setup |
 
+### Synapse Map Initialization
+
+After all wiki files and skills are generated, create the initial `skills/_synapse-map.md`:
+
+1. Read all generated skills in `skills/`
+2. Analyze shared concepts between skills (libraries, data models, domain concepts)
+3. Generate the connection table
+4. Set all `pending_notes` to 0
+5. Leave "Recent Propagations" empty
+
+Also create the history directory for each skill:
+```bash
+for skill_dir in skills/*/; do
+  mkdir -p "${skill_dir}.history"
+done
+```
+
 ### Content Rules for All Wiki Files
 
 - **Never empty.** Every file must have meaningful initial content from the brief/brainstorming.
@@ -350,6 +367,10 @@ Every skill MUST follow this format:
 ---
 name: [skill-name]
 description: [When to use this skill — be specific about triggers]
+maturity: seed
+tasks_completed: 0
+last_synapse_update: YYYY-MM-DD
+connections: []
 ---
 
 # [Skill Title]
@@ -475,6 +496,18 @@ Files in daily-log/ document daily work.
 
 [Links to design spec and implementation plans]
 
+## Task Pipeline
+
+This project uses the **Synaptic Edition** of Project Scaffolder. Use `/task` to assign work to the Cortex orchestrator.
+
+```
+/task <description>          — Full pipeline: classify → execute → QA → test → learn
+/task --skip-persona <desc>  — Skip user simulation (backend tasks)
+/task --priority high <desc> — Fast pipeline (2 iterations max)
+```
+
+See [Synapse Map](skills/_synapse-map.md) for skill connections and learning history.
+
 ## Session Rule: One Phase Per Chat
 
 > **[DECISION] DEC-001** — Each development phase runs in a dedicated chat session.
@@ -502,6 +535,7 @@ Files in daily-log/ document daily work.
 3. Check wiki/priorities.md for what to do
 4. Check guardrails/errors-to-avoid.md to avoid past mistakes
 5. Verify you're in the correct phase
+6. Read skills/_synapse-map.md (skill connections and propagation state)
 
 ### While working
 1. Before starting: update priorities with current task

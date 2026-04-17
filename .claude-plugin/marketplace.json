@@ -8,7 +8,7 @@
     {
       "name": "project-scaffolder",
       "description": "Synaptic Edition — Generate a complete project knowledge base, then orchestrate development with skills that learn, connect, and grow.",
-      "version": "2.1.0",
+      "version": "2.2.0",
       "source": "./",
       "author": {
         "name": "Sergio Valsecchi",

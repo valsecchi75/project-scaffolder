@@ -30,9 +30,9 @@ Project Scaffolder creates a **persistent knowledge layer** that survives betwee
 
 **Result:** The AI agent restarts every session with complete context in seconds, without wasting tokens.
 
-## What's New in v2.0 — Synaptic Edition
+## What's New in v2.1 — Synaptic Edition
 
-v1.x solves the cold-start problem (scaffolding). v2.0 solves the growth problem (development lifecycle).
+v1.x solves the cold-start problem (scaffolding). v2.0 introduced the development lifecycle (Cortex + Synapse + Persona-Lab). v2.1 adds the `pipeline-logger` skill for full audit trail and analytics. See [CHANGELOG.md](CHANGELOG.md) for details.
 
 | Component | What it does |
 |-----------|-------------|
@@ -130,17 +130,19 @@ The mode is written into the generated `CLAUDE.md`, so every future session resp
 
 **Recommended:** Autopilot for most users. Autonomous for experienced developers with clear project specs.
 
-## Token Optimization (Caveman)
+## Token Optimization (Caveman, optional)
 
-The scaffolder automatically installs the [Caveman](https://github.com/JuliusBrussee/caveman) plugin, which compresses Claude's internal reasoning by ~65% without affecting output quality.
+The scaffolder can auto-install the [Caveman](https://github.com/JuliusBrussee/caveman) plugin, which compresses Claude's internal reasoning for token savings on long sessions.
 
-| Mode + Caveman | Estimated Token Savings |
-|----------------|------------------------|
-| Normal + Caveman | ~65% on processing, standard question overhead |
-| Autopilot + Caveman | ~70-75% total (fewer questions + compressed reasoning) |
-| Autonomous + Caveman | ~80% total (zero questions + compressed reasoning) |
+> **Note:** savings figures vary significantly by task shape, model, and session length. The numbers below are indicative from the Caveman project's own documentation — your mileage will vary. Measure with `/stats` after adoption to see actual impact on your project.
 
-Caveman is installed automatically during scaffolding. If already installed, it's skipped. If installation fails (network, permissions), scaffolding continues without it.
+| Mode + Caveman | Indicative token savings (per Caveman docs) |
+|----------------|---------------------------------------------|
+| Normal + Caveman | Moderate |
+| Autopilot + Caveman | Higher (fewer questions + compressed reasoning) |
+| Autonomous + Caveman | Highest (zero questions + compressed reasoning) |
+
+Caveman is installed automatically during scaffolding if available. If already installed, it's skipped. If installation fails (network, permissions), scaffolding continues without it.
 
 ## Karpathy Coding Discipline
 
@@ -284,19 +286,33 @@ Tested on a production mobile app project (Android, Flutter, freemium model):
 ```
 project-scaffolder/
 ├── .claude-plugin/
-│   └── plugin.json              # Plugin metadata (v2.0.0)
+│   ├── plugin.json              # Plugin metadata (v2.1.0)
+│   └── marketplace.json         # Marketplace entry
 ├── commands/
 │   ├── scaffold.md              # /scaffold — generate project structure
-│   └── task.md                  # /task — assign work to Cortex
+│   ├── task.md                  # /task — assign work to Cortex
+│   ├── kickoff.md               # /kickoff — start-of-session ritual
+│   ├── wrap.md                  # /wrap — end-of-session ritual
+│   ├── phase-shift.md           # /phase-shift — transition phases
+│   ├── plan.md                  # /plan — write plan before coding
+│   ├── implement.md             # /implement — execute a plan
+│   ├── review.md                # /review — code review on diff
+│   ├── debug.md                 # /debug — systematic debugging
+│   ├── test.md                  # /test — run tests with report
+│   ├── gate.md                  # /gate — release-gate verification
+│   ├── ship.md                  # /ship — full release pipeline
+│   ├── decide.md                # /decide — document decision
+│   ├── error.md                 # /error — log bug atomically
+│   ├── skills.md                # /skills — show skill map
+│   ├── forge.md                 # /forge — create skill on-demand
+│   └── stats.md                 # /stats — pipeline metrics
 ├── skills/
-│   ├── project-scaffolder/
-│   │   └── SKILL.md             # Phase 0 scaffolding
-│   ├── cortex/
-│   │   └── SKILL.md             # Project Leader orchestration
-│   ├── synapse/
-│   │   └── SKILL.md             # Learning propagation engine
-│   └── persona-lab/
-│       └── SKILL.md             # End-user simulation
+│   ├── project-scaffolder/SKILL.md   # Phase 0 scaffolding
+│   ├── cortex/SKILL.md               # Project Leader orchestration
+│   ├── synapse/SKILL.md              # Learning propagation engine
+│   ├── persona-lab/SKILL.md          # End-user simulation
+│   └── pipeline-logger/SKILL.md      # Audit trail & analytics
+├── CHANGELOG.md
 ├── LICENSE
 └── README.md
 ```

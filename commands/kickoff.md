@@ -14,6 +14,7 @@ Read-only orientation ritual. Run BEFORE any other work in a new session.
 3. Read `wiki/priorities.md` — what is queued
 4. Read `guardrails/errors-to-avoid.md` — what must not repeat
 5. Read `skills/_synapse-map.md` (if exists) — current skill connections
+6. Read `docs/phases/PHASE-{N}-execution.md` (if present) — activity status and model routing for the current phase
 
 ## Output format
 

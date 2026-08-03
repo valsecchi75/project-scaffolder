@@ -30,6 +30,7 @@ Transition from the current phase to the next. Execute only when the current pha
 5. Generate a fresh `wiki/priorities.md` populated from the new phase in the roadmap
 6. Append a milestone entry to `wiki/log.md`
 7. Reset `wiki/handoff.md` for the first session of the new phase
+8. After the transition, run (or recommend) `/phase-doc` for the new phase — the `/task` gate refuses to run without an Execution Doc
 
 ## Rules
 

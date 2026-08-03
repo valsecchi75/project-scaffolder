@@ -13,6 +13,11 @@ Persona-Lab simulates diverse end-user profiles testing the implemented feature,
 
 **Important limitation:** Persona-Lab cannot see rendered UI. It evaluates UX through code structure, text content, and flow logic. Visual issues (alignment, color contrast, spacing) belong to QA or manual review.
 
+## Context Budget (v3)
+
+Persona subagents receive **≤5k tokens** of injected context (same cap as the Cortex specialist):
+task description, the UI/flow under test, relevant excerpt of wiki/ux pages if present, persona profile. Never inject full wiki pages — excerpts only.
+
 ## When to Run
 
 | Task type | Run Persona-Lab? |
@@ -32,18 +37,18 @@ Persona-Lab receives this context:
 |-------|--------|---------|
 | Task description | `/task` command | What was implemented |
 | Files changed (list) | Specialist output | Scope of change |
-| Feature description | `wiki/product/features.md` excerpt | Feature context |
-| UI flow context | `wiki/ux/ui-decisions.md` excerpt | Navigation patterns |
-| Brand/tone rules | `wiki/branding.md` excerpt | Language expectations |
+| Feature description | `wiki/product/features.md` excerpt (if present) | Feature context |
+| UI flow context | `wiki/ux/ui-decisions.md` excerpt (if present) | Navigation patterns |
+| Brand/tone rules | `wiki/branding.md` excerpt (if present) | Language expectations |
 | Relevant widget code | Changed UI files | Actual implementation |
 
 ## Profile Generation
 
 Read project context to generate relevant personas:
 - `wiki/overview.md` — target user description
-- `wiki/ux/ui-decisions.md` — UX principles
-- `wiki/branding.md` — tone and visual identity
-- `wiki/product/features.md` — feature context
+- `wiki/ux/ui-decisions.md` (if present) — UX principles
+- `wiki/branding.md` (if present) — tone and visual identity
+- `wiki/product/features.md` (if present) — feature context
 
 Generate **3 personas** with varying attributes:
 

@@ -1,0 +1,3 @@
+hooks/*.sh text eol=lf
+hooks/*.txt text eol=lf
+hooks/hooks.json text eol=lf

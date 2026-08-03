@@ -1,18 +1,18 @@
 {
   "name": "project-scaffolder-marketplace",
   "owner": {
-    "name": "Sergio Valsecchi",
-    "email": "sergio@kframeinteractive.com"
+    "name": "Agent1",
+    "url": "https://agent1.it"
   },
   "plugins": [
     {
       "name": "project-scaffolder",
-      "description": "Synaptic Edition — Generate a complete project knowledge base, then orchestrate development with skills that learn, connect, and grow.",
-      "version": "2.2.0",
+      "description": "From brief to buildable: generates a persistent project wiki, vertical skills and guardrails, then runs development through a gated task pipeline with QA, phase Execution Docs, model routing, context handoff and destructive-command protection.",
+      "version": "3.0.0",
       "source": "./",
       "author": {
-        "name": "Sergio Valsecchi",
-        "email": "sergio@kframeinteractive.com"
+        "name": "Agent1",
+        "url": "https://agent1.it"
       }
     }
   ]

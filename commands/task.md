@@ -23,6 +23,7 @@ Assign a task to the Cortex — the project's AI project leader. Cortex classifi
 | `--priority high` | Reduces max iterations to 2. QA focuses on correctness only (skips Karpathy compliance for speed). |
 | `--skip-persona` | Skip Persona-Lab user simulation (for backend/infra tasks with no UX impact). |
 | `--skill <name>` | Force a specific skill instead of letting Cortex auto-classify. |
+| `--no-phase-doc` | Skip the Execution Doc gate (conscious choice, logged as [GATE-SKIPPED]) |
 | (none) | Cortex auto-classifies and decides the full pipeline. |
 
 ## Examples
@@ -36,6 +37,7 @@ Assign a task to the Cortex — the project's AI project leader. Cortex classifi
 
 ## What happens
 
+0. **Step 0 gate** — Cortex verifies that `docs/phases/PHASE-{N}-execution.md` exists for the current phase. Missing and no `--no-phase-doc` → the task is refused; run `/phase-doc` first.
 1. **Cortex classifies** — determines domain, complexity, required skills
 2. **Skill lookup/generation** — finds existing skill or generates one on-demand
 3. **Specialist executes** — subagent implements with skill as context

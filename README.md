@@ -1,4 +1,4 @@
-# Project Scaffolder — Synaptic Edition
+# Project Scaffolder — Fable Edition
 
 **Skills that learn, connect, and grow — like neurons in a living project.**
 
@@ -30,9 +30,9 @@ Project Scaffolder creates a **persistent knowledge layer** that survives betwee
 
 **Result:** The AI agent restarts every session with complete context in seconds, without wasting tokens.
 
-## What's New in v2.1 — Synaptic Edition
+## What's New in v3.0 — Fable Edition
 
-v1.x solves the cold-start problem (scaffolding). v2.0 introduced the development lifecycle (Cortex + Synapse + Persona-Lab). v2.1 adds the `pipeline-logger` skill for full audit trail and analytics. See [CHANGELOG.md](CHANGELOG.md) for details.
+**v3.0 Fable Edition:** phase Execution Docs with model routing, proactive context handoff, wiki lifecycle with archive, destructive-command guardrail hooks, auto-format hook. v1.x solves the cold-start problem (scaffolding). v2.0 introduced the development lifecycle (Cortex + Synapse + Persona-Lab). v2.1 adds the `pipeline-logger` skill for full audit trail and analytics. See [CHANGELOG.md](CHANGELOG.md) for details.
 
 | Component | What it does |
 |-----------|-------------|
@@ -73,17 +73,31 @@ The scaffolder produces:
 ### 1. CLAUDE.md — Central Hub
 The project's single source of truth. Read automatically by Claude Code at every session start. Contains navigation to all files, skill references, operative rules, and session management protocol.
 
-### 2. Wiki — 21+ Interconnected Pages
+### 2. Wiki — 12 Core Pages + On-Demand
+
+12 core pages are always generated up front; everything else is created on-demand, the first time a task actually needs it, and listed in `wiki/index.md` under "on-demand (not yet created)".
+
+**Core (12, always generated):**
 
 | Section | Files | Purpose |
 |---------|-------|---------|
-| **Core** | overview, vision, glossary | Project identity: what it does, why it exists, shared vocabulary |
-| **Product** | roadmap, decisions, features | What to build, in what order, why each choice was made |
-| **Technical** | architecture, tech-stack, scripts, workflows, prompts | How it's built: structure, tools, automations |
-| **Design** | branding, ux/ui-decisions | Visual identity, themes, interface principles |
-| **Debug** | known-errors, failed-experiments | Error memory: what didn't work and why |
-| **Incubator** | raw-ideas, future-directions | Unvalidated ideas, long-term explorations |
-| **Operations** | priorities, log, handoff, setup | Current state, timeline, session transitions |
+| **Hub** | CLAUDE.md, wiki/index.md | Central hub + navigation map |
+| **Product** | overview, priorities, product/roadmap, product/decisions | What to build, in what order, why each choice was made |
+| **Technical** | architecture, tech-stack | How it's built: structure, tools, conventions |
+| **Debug** | debugging/known-errors | Error memory: what didn't work and why |
+| **Guardrails** | guardrails/errors-to-avoid | Hard-won lessons, anti-patterns |
+| **Operations** | log, handoff | Timeline, session transitions |
+
+**On-demand (created on first real use):**
+
+| Section | Files | Purpose |
+|---------|-------|---------|
+| **Identity** | vision, glossary | Why it exists, shared vocabulary |
+| **Product** | product/features | Feature-level detail |
+| **Technical** | scripts, workflows, prompts, setup-claude-code | Automations, session setup |
+| **Design** | branding, ux/ui-decisions | Visual identity, interface principles |
+| **Debug** | debugging/failed-experiments | What didn't work and why |
+| **Incubator** | incubator/raw-ideas, incubator/future-directions | Unvalidated ideas, long-term explorations |
 
 ### 3. Vertical Skills — Domain-Specific Guides
 
@@ -130,19 +144,9 @@ The mode is written into the generated `CLAUDE.md`, so every future session resp
 
 **Recommended:** Autopilot for most users. Autonomous for experienced developers with clear project specs.
 
-## Token Optimization (Caveman, optional)
+## Token Optimization
 
-The scaffolder can auto-install the [Caveman](https://github.com/JuliusBrussee/caveman) plugin, which compresses Claude's internal reasoning for token savings on long sessions.
-
-> **Note:** savings figures vary significantly by task shape, model, and session length. The numbers below are indicative from the Caveman project's own documentation — your mileage will vary. Measure with `/stats` after adoption to see actual impact on your project.
-
-| Mode + Caveman | Indicative token savings (per Caveman docs) |
-|----------------|---------------------------------------------|
-| Normal + Caveman | Moderate |
-| Autopilot + Caveman | Higher (fewer questions + compressed reasoning) |
-| Autonomous + Caveman | Highest (zero questions + compressed reasoning) |
-
-Caveman is installed automatically during scaffolding if available. If already installed, it's skipped. If installation fails (network, permissions), scaffolding continues without it.
+v3 token diet: 12-file core wiki, injection budgets, one report per task.
 
 ## Karpathy Coding Discipline
 
@@ -171,8 +175,8 @@ User Brief
 │  1. Analyze      │  Extract domain, tech stack, target, business model
 │  2. Brainstorm   │  Architecture, UX, business, technical decisions
 │  3. Design Spec  │  Complete project specification
-│  4. Structure    │  Create directories + install Caveman
-│  5. Wiki         │  3 parallel agents generate 21+ wiki pages
+│  4. Structure    │  Create directories
+│  5. Wiki         │  2 parallel agents generate 12 core wiki pages
 │  6. Skills       │  Generate domain-specific vertical skills
 │  7. Verify       │  All files exist, all links resolve
 │  8. Handoff      │  Ready for Phase 1 development
@@ -220,6 +224,71 @@ New project: E-commerce site for handmade jewelry. My customers are women 25-45 
 
 The skill detects that you're starting a new project and activates automatically. If no mode is specified, you'll be asked to choose.
 
+## Slash Commands Reference
+
+The plugin ships 19 slash commands grouped by workflow phase. Each command is focused, predictable, and safe to rerun.
+
+### Project lifecycle
+
+| Command | Purpose | Writes files? |
+|---------|---------|---------------|
+| `/scaffold` | Generate a complete project knowledge base from a brief | Yes — creates CLAUDE.md, wiki, skills, guardrails |
+| `/phase-doc` | Generate the phase Execution Doc — hard gate for `/task` | Yes |
+| `/task` | Assign work to the Cortex pipeline (classify → execute → QA → test → learn) | Yes — source code + logs |
+
+### Session lifecycle
+
+| Command | Purpose | Writes files? |
+|---------|---------|---------------|
+| `/kickoff` | Start-of-session briefing: reads CLAUDE.md, handoff, priorities, guardrails, synapse map | No |
+| `/wrap` | End-of-session ritual: updates handoff, priorities, daily log; optional `--commit` | Yes |
+| `/phase-shift <N>` | Formal transition between phases; archives current phase, opens the next | Yes |
+
+### Development
+
+| Command | Purpose | Writes files? |
+|---------|---------|---------------|
+| `/plan <task>` | Write an implementation plan with verifiable steps — before any code | Yes — plan file |
+| `/implement <plan>` | Execute a plan through Cortex, step-by-step with QA on each | Yes — source code |
+| `/review [scope]` | Code review on a diff using Karpathy checklist (SCOPE, SIMPLICITY, SURGICAL, DEAD CODE) | No |
+| `/debug <symptom>` | Systematic debugging: reproduce → isolate → diagnose → fix → document | Yes — known-errors, guardrails |
+| `/test [scope]` | Run tests with consistent reporting; scopes: `--changed`, `--all`, `--coverage`, `--file` | No (logs only) |
+
+### Release and quality
+
+| Command | Purpose | Writes files? |
+|---------|---------|---------------|
+| `/gate` | Run the 6-stage release-gate skill (includes Simplicity Check); fail-fast | No (logs only) |
+| `/ship [--patch\|--minor\|--major]` | Full release pipeline: gate + version bump + changelog + tag. Never pushes automatically | Yes |
+
+### Knowledge management
+
+| Command | Purpose | Writes files? |
+|---------|---------|---------------|
+| `/decide <title>` | Document a decision with alternatives and rationale; auto-increments DEC-NNN | Yes — decisions.md |
+| `/error <title>` | Log a bug atomically across known-errors, guardrails, and propagate via Synapse | Yes |
+| `/wiki-gc` | Archive stale wiki content, enforce line caps | Yes |
+
+### Skills and analytics
+
+| Command | Purpose | Writes files? |
+|---------|---------|---------------|
+| `/skills [--status]` | Show the skill map with maturity, connections, pending propagations | No |
+| `/forge <domain>` | Create a new vertical skill on-demand for a specific domain | Yes — skills/ |
+| `/stats [timeframe]` | Pipeline metrics from logs: volume, quality, rejection reasons, skill usage | No |
+
+### Typical daily flow
+
+```
+/kickoff                             # See where you are
+/phase-doc                           # Mandatory at the start of a phase — the Cortex gate refuses /task and /implement without it
+/plan Add monthly-spend widget       # Think first
+/implement @latest                   # Execute the plan through Cortex
+/review                              # Sanity-check the diff
+/decide Widget refresh = 15 min      # Record the decision
+/wrap --commit                       # Close the session cleanly
+```
+
 ## After Scaffolding: The Daily Workflow
 
 ```
@@ -254,7 +323,7 @@ A key innovation of this methodology: **each development phase runs in its own c
 | New session onboarding | 5-10 min of context | Automatic (CLAUDE.md + handoff) |
 | Repeated errors | Frequent | Rare (documented guardrails) |
 | Decision tracking | Lost in chat | Permanent in wiki |
-| Parallelism | Sequential | Parallel subagents (3-5x faster) |
+| Parallelism | Sequential | Parallel subagents (2 wiki agents) |
 
 ## Supported Project Types
 
@@ -267,7 +336,7 @@ A key innovation of this methodology: **each development phase runs in its own c
 | **E-commerce** | frontend-patterns, product-catalog, payment-flow, brand-voice, seo-strategy, release-gate |
 | **SaaS** | frontend-patterns, [domain]-domain, pricing-strategy, onboarding-flow, growth-marketing, release-gate |
 
-## Real-World Results
+## Real-World Results (v2.x baseline)
 
 Tested on a production mobile app project (Android, Flutter, freemium model):
 
@@ -286,10 +355,11 @@ Tested on a production mobile app project (Android, Flutter, freemium model):
 ```
 project-scaffolder/
 ├── .claude-plugin/
-│   ├── plugin.json              # Plugin metadata (v2.1.0)
+│   ├── plugin.json              # Plugin metadata (v3.0.0)
 │   └── marketplace.json         # Marketplace entry
 ├── commands/
 │   ├── scaffold.md              # /scaffold — generate project structure
+│   ├── phase-doc.md             # /phase-doc — generate phase Execution Doc
 │   ├── task.md                  # /task — assign work to Cortex
 │   ├── kickoff.md               # /kickoff — start-of-session ritual
 │   ├── wrap.md                  # /wrap — end-of-session ritual
@@ -303,6 +373,7 @@ project-scaffolder/
 │   ├── ship.md                  # /ship — full release pipeline
 │   ├── decide.md                # /decide — document decision
 │   ├── error.md                 # /error — log bug atomically
+│   ├── wiki-gc.md               # /wiki-gc — wiki archive & line-cap enforcement
 │   ├── skills.md                # /skills — show skill map
 │   ├── forge.md                 # /forge — create skill on-demand
 │   └── stats.md                 # /stats — pipeline metrics
@@ -311,7 +382,17 @@ project-scaffolder/
 │   ├── cortex/SKILL.md               # Project Leader orchestration
 │   ├── synapse/SKILL.md              # Learning propagation engine
 │   ├── persona-lab/SKILL.md          # End-user simulation
+│   ├── context-manager/SKILL.md      # Proactive context handoff (v3)
 │   └── pipeline-logger/SKILL.md      # Audit trail & analytics
+├── hooks/
+│   ├── deny-dangerous.sh             # PreToolUse guard (bash)
+│   ├── deny-dangerous.ps1            # PreToolUse guard (PowerShell variant)
+│   ├── dangerous-patterns.txt        # Case-insensitive destructive-command patterns
+│   ├── dangerous-patterns-case-sensitive.txt  # Case-sensitive patterns (e.g. git branch -D)
+│   ├── auto-format.sh                # PostToolUse formatter
+│   └── hooks.json                    # Hook wiring (PreToolUse + PostToolUse)
+├── templates/
+│   └── execution-doc.md              # Template for docs/phases/PHASE-{N}-execution.md
 ├── CHANGELOG.md
 ├── LICENSE
 └── README.md
@@ -328,7 +409,7 @@ Found a domain or tech stack that's not covered? Want to improve a template?
 
 ## Credits
 
-- **Methodology:** Developed by [@valsecchi75](https://github.com/valsecchi75)
+- **Methodology:** Developed by [agent1.it](https://agent1.it)
 - **Knowledge pattern:** Inspired by [Andrej Karpathy's Markdown wiki gist](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)
 - **Built with:** [Claude Code](https://claude.com/product/claude-code) by Anthropic
 - **Skills system:** [Claude Code plugins](https://claude.com/plugins)

@@ -33,6 +33,16 @@ When a user describes work during a development session (post-scaffolding), Cort
 
 ## The Pipeline
 
+### Step 0: Execution Doc gate (v3)
+
+Before any classification:
+
+1. Determine the current phase N from CLAUDE.md ("Current phase").
+2. Check that `docs/phases/PHASE-{N}-execution.md` exists.
+   - **Missing** → STOP the pipeline. Reply exactly: "Fase {N} senza Execution Doc — esegui `/phase-doc` prima di assegnare task." Log the refusal to `logs/pipeline/`.
+   - **Exception:** the `--no-phase-doc` flag skips the gate. Log it as a conscious choice: `[GATE-SKIPPED by user flag]`.
+3. If the doc exists: read the Activities table, match the task against an activity, and use its assigned **Model** as the routing hint for the specialist subagent (Step 4). If the task matches no activity, ask the user whether to add it to the doc or proceed as unplanned work (logged).
+
 ### Step 1: Classify the task
 
 Analyze the request and determine:
@@ -198,7 +208,8 @@ After all gates pass:
 1. Call Synapse for learning propagation (pass the learning packet)
 2. Update `wiki/priorities.md` — mark task complete with evidence
 3. Update `daily-log/YYYY-MM-DD.md` with task report
-4. Report to user: task completed, iterations needed, skills created/updated
+4. Report to user in **≤10 lines**: outcome, evidence (VERIFY), iterations, skills touched. The pipeline log is the complete record — never duplicate it in chat.
+5. Context threshold check: after closing, evaluate context consumption (context-manager skill). Above the threshold in CLAUDE.md → no new tasks: run the Handoff Procedure and emit the continuation prompt.
 
 ## Decision Matrix
 
@@ -238,4 +249,4 @@ See `skills/pipeline-logger/SKILL.md` for complete log format and templates.
 
 ## Context
 
-This is the central orchestrator skill for the Project Scaffolder v2.0 "Synaptic Edition". It coordinates with three other skills: Synapse (learning propagation), Persona-Lab (user simulation), and the project-scaffolder itself (initial scaffolding). The Cortex is triggered by the /task command.
+This is the central orchestrator skill for the Project Scaffolder v3.0 "Fable Edition". It coordinates with five other skills: synapse (learning propagation), persona-lab (user simulation), pipeline-logger (audit trail), context-manager (proactive context handoff), and project-scaffolder itself (initial scaffolding). The Cortex is triggered by the /task command.

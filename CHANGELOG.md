@@ -5,6 +5,23 @@ All notable changes to the Project Scaffolder plugin are documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.0.0 — 2026-08-03 "Fable Edition" (Ondata 1)
+
+### Added
+- `/phase-doc` + `templates/execution-doc.md`: per-phase Execution Doc (activities, model routing Fable/Opus/Sonnet/Haiku, token estimates, VERIFY criteria, parallelizable flag). Hard gate: the Cortex refuses `/task` without it (`--no-phase-doc` to skip consciously).
+- `context-manager` skill: 300k threshold, proactive handoff, ≤40-line continuation prompt, context minimalism rules.
+- `/wiki-gc` + `/wrap` hygiene pass: wiki lifecycle with `wiki/_archive/`, `last-verified` headers, line caps (CLAUDE.md ≤120, handoff ≤80, priorities ≤100).
+- Hooks: PreToolUse guardrail against destructive commands (sh + ps1, pattern file), PostToolUse auto-format. Generated projects get a self-contained copy in `.claude/hooks/`.
+
+### Changed
+- CLAUDE.md template rewritten: ≤120 lines, style rules (concise output, human comments, performance), context rules, v3 task pipeline.
+- Wiki generation: 12 core files + on-demand pages (was 21+ upfront).
+- Cortex: concise ≤10-line task report; model routing hint from the Execution Doc.
+- Persona-lab: 5k injection budget.
+
+### Removed
+- Caveman integration (unverified claims; replaced by structural token diet).
+
 ## [2.2.0] — 2026-04-17
 
 ### Added

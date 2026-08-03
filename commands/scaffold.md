@@ -41,7 +41,7 @@ If no mode is specified, the scaffolder will ask you to choose.
 ## What it generates
 
 1. **CLAUDE.md** — Central project hub read automatically by Claude Code
-2. **Wiki (21+ pages)** — Karpathy-style persistent knowledge base
+2. **Wiki (12 core pages + on-demand)** — Karpathy-style persistent knowledge base
 3. **Vertical skills** — Domain-specific coding patterns, marketing guides, release gates
 4. **Guardrails** — Error prevention and anti-pattern documentation
 5. **Design spec** — Complete project specification
@@ -50,7 +50,6 @@ If no mode is specified, the scaffolder will ask you to choose.
 
 ## Extras
 
-- **Caveman** — Automatically installs the [Caveman](https://github.com/JuliusBrussee/caveman) plugin for ~65% token savings
 - **Interaction mode** — Written into the generated CLAUDE.md so ALL future sessions respect your preferred level of autonomy
 
 After scaffolding, start building with: `claude` → "Proceed with Phase 1"

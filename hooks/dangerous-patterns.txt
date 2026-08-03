@@ -1,0 +1,28 @@
+# rm ricorsivo+force in ogni ordine di flag (cluster combinato, es. -rf/-fr)
+rm[[:space:]]+-[a-zA-Z]*r[a-zA-Z]*f
+rm[[:space:]]+-[a-zA-Z]*f[a-zA-Z]*r
+# rm ricorsivo+force con flag separati (es. -r -f / -f -r), in ogni ordine
+rm[[:space:]]+.*-r\b.*-f\b
+rm[[:space:]]+.*-f\b.*-r\b
+# rm ricorsivo+force in forma estesa (--recursive --force), in ogni ordine
+rm[[:space:]]+.*--recursive\b.*--force\b
+rm[[:space:]]+.*--force\b.*--recursive\b
+# PowerShell recurse+force delete
+Remove-Item[[:space:]].*-Recurse
+rd[[:space:]]+/s
+del[[:space:]]+/[sfq]
+# git distruttivi
+git[[:space:]]+reset[[:space:]]+--hard
+git[[:space:]]+clean[[:space:]]+-[a-zA-Z]*f
+git[[:space:]]+push[[:space:]]+.*--force([^-]|$)
+git[[:space:]]+push(.*[[:space:]])?-f\b
+git[[:space:]]+checkout[[:space:]]+--[[:space:]]+\.
+# NB: "git branch -D" (force-delete, distruttivo) vive in
+# dangerous-patterns-case-sensitive.txt, NON qui: questo file è matchato
+# case-insensitive dagli script, il che farebbe scattare un falso positivo
+# sul sicuro "git branch -d" (delete-if-merged) quotidiano.
+# database e dischi
+DROP[[:space:]]+(TABLE|DATABASE|SCHEMA)
+TRUNCATE([[:space:]]+TABLE)?[[:space:]]+
+mkfs
+format[[:space:]]+[a-zA-Z]:

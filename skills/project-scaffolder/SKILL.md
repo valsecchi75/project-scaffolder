@@ -1,6 +1,6 @@
 ---
 name: project-scaffolder
-description: Use when starting ANY new project from a user brief. Generates the complete project structure automatically — CLAUDE.md hub, Karpathy-style wiki (21+ pages), vertical skills, guardrails, handoff protocol, design spec, and implementation plan. Also triggers on "new project", "setup project", "scaffolding", "scaffold", or when a user provides a project brief/description.
+description: Use when starting ANY new project from a user brief. Generates the complete project structure automatically — CLAUDE.md hub, Karpathy-style wiki (12 core pages + on-demand), vertical skills, guardrails, handoff protocol, design spec, and implementation plan. Also triggers on "new project", "setup project", "scaffolding", "scaffold", or when a user provides a project brief/description.
 ---
 
 # Project Scaffolder — Master Skill
@@ -106,50 +106,14 @@ These rules are injected into the generated CLAUDE.md operative rules:
 
 ---
 
-## Token Optimization: Caveman Integration
+## Token Diet (v3)
 
-The scaffolder automatically integrates [Caveman](https://github.com/JuliusBrussee/caveman) for ~65% token reduction across all project sessions.
+No compression layers. Token savings are structural:
 
-### Auto-Installation Flow
-
-During Phase 4 (Create Directory Structure), the scaffolder runs:
-
-```bash
-# Check if Caveman is already installed
-if ! claude plugin list 2>/dev/null | grep -q "caveman"; then
-  echo "Installing Caveman plugin for token optimization..."
-  claude plugin add JuliusBrussee/caveman
-  echo "✅ Caveman installed — ~65% token savings active"
-else
-  echo "✅ Caveman already installed"
-fi
-```
-
-**If installation fails** (network issues, permissions): log to `guardrails/errors-to-avoid.md`, continue without it. Caveman is an optimization, not a requirement.
-
-### What Gets Added to CLAUDE.md
-
-The generated CLAUDE.md includes a Token Optimization section:
-
-```markdown
-## Token Optimization
-
-This project uses [Caveman](https://github.com/JuliusBrussee/caveman) for compressed communication.
-
-**How it works:** Caveman compresses Claude's internal reasoning and file operations using abbreviated syntax, reducing token usage by ~65% without affecting output quality.
-
-**Important:** Caveman affects HOW Claude processes, not WHAT it produces. All user-facing text, code, and documentation remain full quality.
-```
-
-### Caveman + Mode Synergy
-
-| Mode | Caveman Benefit |
-|------|----------------|
-| Normal | Saves tokens on the many question/answer exchanges |
-| Autopilot | Saves tokens on decision documentation (fewer questions = less overhead already) |
-| Autonomous | Maximum savings — no question overhead + compressed reasoning. Best combined efficiency. |
-
-**Recommended combination:** Autopilot + Caveman for experienced users. Autonomous + Caveman for maximum speed on well-defined projects.
+1. **Core wiki only** — 12 files always generated (see Phase 5); everything else on-demand.
+2. **Injection budgets** — the Cortex injects ≤5k tokens of context per subagent (see cortex skill); persona-lab has the same cap.
+3. **One report per task** — chat gets ≤10 lines; the pipeline log holds the full record.
+4. **Execution Doc token estimates** — cost is planned per activity, not discovered.
 
 ---
 
@@ -232,56 +196,82 @@ Generate `docs/superpowers/specs/YYYY-MM-DD-[project-name]-design.md` with:
 ## Phase 4: Create Directory Structure
 
 ```bash
-mkdir -p wiki/product wiki/ux wiki/debugging wiki/incubator
+mkdir -p wiki/product wiki/debugging
 mkdir -p skills/ guardrails/ daily-log/
 mkdir -p docs/superpowers/specs docs/superpowers/plans
 mkdir -p logs/pipeline logs/errors
 ```
 
+Also create `docs/phases/` and copy the guardrail into the project so it is self-contained:
+
+```bash
+mkdir -p docs/phases .claude/hooks
+cp "${CLAUDE_PLUGIN_ROOT}/hooks/deny-dangerous.sh" .claude/hooks/
+cp "${CLAUDE_PLUGIN_ROOT}/hooks/dangerous-patterns.txt" .claude/hooks/
+cp "${CLAUDE_PLUGIN_ROOT}/hooks/dangerous-patterns-case-sensitive.txt" .claude/hooks/
+cp "${CLAUDE_PLUGIN_ROOT}/hooks/auto-format.sh" .claude/hooks/
+```
+
+Then write `.claude/settings.json` in the project:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [{ "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/deny-dangerous.sh\"" }]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/auto-format.sh\"" }]
+      }
+    ]
+  }
+}
+```
+
+(If the file already exists, merge the hooks key instead of overwriting.)
+
 ---
 
 ## Phase 5: Generate Wiki (parallel subagents)
 
-Launch 3 parallel subagents to create all wiki files simultaneously:
+Launch 2 parallel subagents to create the core wiki files simultaneously:
 
-### Agent 1 — Core + Operations (8 files)
-
-| File | Content |
-|------|---------|
-| `CLAUDE.md` | Central hub with full navigation, skill list, operative rules, session rules |
-| `wiki/index.md` | Complete navigation map linking all wiki pages |
-| `wiki/overview.md` | Elevator pitch, problem, solution, target audience |
-| `wiki/vision.md` | Product philosophy, guiding principles (5 max), tone of voice |
-| `wiki/log.md` | Changelog with project inception entry |
-| `wiki/glossary.md` | Domain-specific terms (8-12 terms) |
-| `wiki/priorities.md` | Current phase tasks with **verifiable success criteria**, next steps, blockers |
-| `wiki/handoff.md` | Session state: what was done, what remains, files to read, template |
-
-### Agent 2 — Technical + Design (7 files)
+### Agent 1 — Core + Operations (6 files)
 
 | File | Content |
 |------|---------|
-| `wiki/architecture.md` | Layer structure, data flow diagram, primary data model |
-| `wiki/tech-stack.md` | Chosen stack, why, rejected alternatives, open decisions |
-| `wiki/branding.md` | Name, positioning, tone examples, visual themes |
-| `wiki/scripts.md` | Empty template for future scripts/utilities |
-| `wiki/workflows.md` | CI/CD placeholder, development workflow |
-| `wiki/prompts.md` | AI prompting documentation if relevant |
-| `wiki/setup-claude-code.md` | Step-by-step setup guide for the project's dev environment |
+| `CLAUDE.md` | Central hub, ≤120 lines (template below) |
+| `wiki/index.md` | Navigation map: 12 core pages + "on-demand" section listing pages created on first use |
+| `wiki/overview.md` | Elevator pitch, problem, solution, target |
+| `wiki/priorities.md` | Phase tasks with `→ VERIFY:` criteria (≤100 lines) |
+| `wiki/handoff.md` | Session state template (≤80 lines) |
+| `wiki/log.md` | Changelog with inception entry (append-only) |
 
-### Agent 3 — Product + Debug + Incubator (9 files)
+### Agent 2 — Technical + Product (6 files)
 
 | File | Content |
 |------|---------|
-| `wiki/product/roadmap.md` | All phases with feature lists and status |
-| `wiki/product/decisions.md` | All decisions from brainstorming (DEC-001 through DEC-N) |
-| `wiki/product/features.md` | Detailed feature specs for Phase 1 |
-| `wiki/ux/ui-decisions.md` | UI principles, onboarding flow, user journey |
-| `wiki/debugging/known-errors.md` | Empty with template for bug documentation |
-| `wiki/debugging/failed-experiments.md` | Empty with template for failed approaches |
-| `wiki/incubator/raw-ideas.md` | 3-5 initial ideas from brainstorming |
-| `wiki/incubator/future-directions.md` | 3-4 long-term explorations |
-| `guardrails/errors-to-avoid.md` | Template + any errors encountered during setup |
+| `wiki/architecture.md` | Layers, data flow, primary data model |
+| `wiki/tech-stack.md` | Stack, rationale, rejected alternatives, verify/build/test commands |
+| `wiki/product/roadmap.md` | Phases with feature lists and status |
+| `wiki/product/decisions.md` | DEC-001..N with alternatives (append-only) |
+| `wiki/debugging/known-errors.md` | Template for bug documentation |
+| `guardrails/errors-to-avoid.md` | Template + any scaffolding errors |
+
+### On-demand pages (created on first real use, never upfront)
+
+`wiki/vision.md`, `wiki/glossary.md`, `wiki/branding.md`, `wiki/scripts.md`, `wiki/workflows.md`, `wiki/prompts.md`, `wiki/setup-claude-code.md`, `wiki/product/features.md`, `wiki/ux/ui-decisions.md`, `wiki/debugging/failed-experiments.md`, `wiki/incubator/raw-ideas.md`, `wiki/incubator/future-directions.md`
+
+Rule: when a task first needs one of these, create it with meaningful content and add it to `wiki/index.md`. The index lists them upfront under "On-demand (not yet created)".
+
+### Wiki page header rule (v3)
+
+Every generated wiki page starts with `> last-verified: YYYY-MM-DD` on its first line after the title. `/wrap` and `/wiki-gc` maintain it.
 
 ### Synapse Map Initialization
 
@@ -408,27 +398,29 @@ connections: []
 Run automated verification:
 
 ```bash
-# Check all expected files exist
-for f in CLAUDE.md wiki/index.md wiki/overview.md wiki/vision.md wiki/log.md \
-  wiki/glossary.md wiki/priorities.md wiki/handoff.md wiki/architecture.md \
-  wiki/tech-stack.md wiki/branding.md wiki/scripts.md wiki/workflows.md \
-  wiki/prompts.md wiki/setup-claude-code.md wiki/product/roadmap.md \
-  wiki/product/decisions.md wiki/product/features.md wiki/ux/ui-decisions.md \
-  wiki/debugging/known-errors.md wiki/debugging/failed-experiments.md \
-  wiki/incubator/raw-ideas.md wiki/incubator/future-directions.md \
-  guardrails/errors-to-avoid.md; do
+# Check all 12 core files exist
+for f in CLAUDE.md wiki/index.md wiki/overview.md wiki/priorities.md \
+  wiki/handoff.md wiki/log.md wiki/architecture.md wiki/tech-stack.md \
+  wiki/product/roadmap.md wiki/product/decisions.md \
+  wiki/debugging/known-errors.md guardrails/errors-to-avoid.md; do
   [ -f "$f" ] && echo "OK  $f" || echo "MISSING  $f"
 done
 
-# Check all cross-links in CLAUDE.md resolve
-grep -oP '\[.*?\]\(([^)]+)\)' CLAUDE.md | grep -oP '\(([^)]+)\)' | tr -d '()' | while read link; do
-  [ -f "$link" ] || [ -d "$link" ] && echo "OK  $link" || echo "BROKEN  $link"
-done
+# Check CLAUDE.md stays within the token-diet line cap
+awk 'END{if(NR>120) print "FAIL CLAUDE.md >120 lines"; else print "OK lines"}' CLAUDE.md
+
+# Cross-links: the Navigation table in CLAUDE.md lists bare wiki paths (no
+# markdown [text](path) syntax), so a grep for that syntax is a no-op. The
+# core-files loop above already checks every path referenced there — no
+# separate link-resolution check is needed.
 
 # Check all skills have valid frontmatter
 for f in skills/*/SKILL.md; do
   head -5 "$f" | grep -q "^name:" && echo "OK  $f" || echo "NO FRONTMATTER  $f"
 done
+
+# Check v3 artifacts are present (Execution Doc gate + guardrail hooks)
+[ -d docs/phases ] && [ -f .claude/hooks/deny-dangerous.sh ] && [ -f .claude/settings.json ] && echo "OK v3 artifacts"
 ```
 
 All checks must pass before proceeding.
@@ -455,135 +447,59 @@ The CLAUDE.md is the most critical file. It MUST contain:
 ```markdown
 # [Project Name] — Project Hub
 
-> This file is read at the start of every session.
+> Read at the start of every session. Hub only: details live in the wiki.
+> last-verified: YYYY-MM-DD
 
 ## What is [Project Name]?
 
-[Description from brief + brainstorming decisions]
+[2-3 lines: what, target, positioning, business model, tech stack]
 
-- **Target:** [target user]
-- **Positioning:** [one-liner]
-- **Model:** [business model]
-- **Tech stack:** [chosen stack]
-- **Current phase:** Phase 1 — [phase name] (Phase 0 completed [date])
+- **Current phase:** Phase N — [name]
+- **Interaction mode:** [Normal|Autopilot|Autonomous] (DEC-002)
+- **Context threshold:** 300k
 
-## Wiki Navigation
+## Navigation (12 core pages)
 
-| Area | File | Contents |
-|------|------|----------|
-[Complete table linking ALL wiki files]
+| File | Contents |
+|------|----------|
+| wiki/index.md | Full map + on-demand pages list |
+| wiki/overview.md · priorities.md · handoff.md · log.md | Product & session state |
+| wiki/architecture.md · tech-stack.md | Technical foundation |
+| wiki/product/roadmap.md · decisions.md | Direction & history (append-only) |
+| wiki/debugging/known-errors.md · guardrails/errors-to-avoid.md | Hard-won lessons |
 
-## Debugging & Guardrails
+## Task Pipeline (v3)
 
-| Area | File | Contents |
-|------|------|----------|
-[Links to known-errors, failed-experiments, errors-to-avoid]
+1. **No work without an Execution Doc:** `/phase-doc` generates `docs/phases/PHASE-{N}-execution.md` (activities, model routing, VERIFY criteria). `/task` refuses to run without it.
+2. `/task <description>` — full pipeline: classify → execute → QA → test → learn.
+3. Models per activity follow the Execution Doc routing (Fable: long multi-file work; Opus: architecture; Sonnet: medium tasks; Haiku: mechanical).
+4. Activities marked Parallel=yes can run in separate worktrees (`claude --worktree`).
 
-## Daily Log
+## Context Rules
 
-Files in daily-log/ document daily work.
+- **1 chat = 1 phase.** Above the context threshold: stop, update handoff, emit the continuation prompt (context-manager skill).
+- Wrong path → `/rewind` + re-prompt with the lesson. Between large tasks → `/clear` + brief.
+- `/compact` always with a hint. Link wiki pages, don't paste them.
 
-## Ideas & Incubator
+## Style Rules
 
-| Area | File | Contents |
-|------|------|----------|
-[Links to raw-ideas and future-directions]
+- **Concise output:** one report per task, ≤10 lines in chat; the pipeline log holds the detail.
+- **Comments like a senior human:** explain *why*, never the obvious *what*; match the file's density.
+- **Performance:** measure before optimizing; no premature abstractions; watch N+1 queries, useless re-renders, I/O in loops.
 
-## Vertical Skills
+## Coding Discipline (Karpathy)
 
-[Table organized by category: Orchestrator, Technical, Marketing, Strategic]
+1. **Think first:** state assumptions; ask when uncertain.
+2. **Simplicity:** minimum code that solves the stated problem.
+3. **Surgical:** touch only what the task requires; every changed line traces to the task.
+4. **Goal-driven:** verifiable criteria before implementing; "done" only with evidence.
 
-## Specs & Plans
+## Session Rules
 
-[Links to design spec and implementation plans]
-
-## Task Pipeline
-
-This project uses the **Synaptic Edition** of Project Scaffolder. Use `/task` to assign work to the Cortex orchestrator.
-
-```
-/task <description>          — Full pipeline: classify → execute → QA → test → learn
-/task --skip-persona <desc>  — Skip user simulation (backend tasks)
-/task --priority high <desc> — Fast pipeline (2 iterations max)
-```
-
-See [Synapse Map](skills/_synapse-map.md) for skill connections and learning history.
-
-## Pipeline Logs
-
-Every `/task` execution is recorded in `logs/`:
-- `logs/pipeline/YYYY-MM-DD.md` — Full audit trail of every operation (classify, execute, QA, test, learn)
-- `logs/errors/YYYY-MM-DD-errors.md` — Errors only, for fast debugging
-
-See `skills/pipeline-logger/SKILL.md` for log format and analytics queries.
-
-## Session Rule: One Phase Per Chat
-
-> **[DECISION] DEC-001** — Each development phase runs in a dedicated chat session.
-
-**Why:** Long conversations degrade response quality (context rot).
-
-**How it works:**
-1. 1 chat = 1 phase. Never mix phases.
-2. Structured handoff at end of session.
-3. The wiki is the memory between sessions.
-4. If context runs out mid-phase, update wiki and start fresh.
-
-**End-of-session checklist (mandatory):**
-- [ ] wiki/priorities.md updated
-- [ ] daily-log/YYYY-MM-DD.md created/updated
-- [ ] wiki/log.md updated if significant changes
-- [ ] If phase complete: update wiki/product/roadmap.md
-- [ ] If new decisions: document in wiki/product/decisions.md
-
-## Operative Rules for Claude
-
-### Every session
-1. Read this file for context
-2. Read wiki/handoff.md for last session state
-3. Check wiki/priorities.md for what to do
-4. Check guardrails/errors-to-avoid.md to avoid past mistakes
-5. Verify you're in the correct phase
-6. Read skills/_synapse-map.md (skill connections and propagation state)
-
-### While working
-1. Before starting: update priorities with current task
-2. During: document significant decisions in decisions.md
-3. If you hit a bug: document in known-errors.md
-4. If something fails: document in failed-experiments.md AND guardrails
-5. End of session: create/update daily log
-
-### Memory rules
-- Never overwrite history (mark as ~~superseded~~)
-- Preserve the why (alternatives considered)
-- Failures = intelligence (every error deserves an entry)
-- Tag certainty: [FACT], [DECISION], [HYPOTHESIS], [IDEA], [DEPRECATED]
-- Daily log is mandatory
-
-### Coding Discipline (Karpathy Principles)
-
-> Derived from Andrej Karpathy's observations on LLM coding pitfalls.
-
-**1. Think Before Coding**
-- State assumptions explicitly. If uncertain, ask.
-- Surface multiple interpretations rather than choosing silently.
-- When confused, stop and clarify before writing a single line.
-
-**2. Simplicity First**
-- Write only the minimum code that solves the stated problem.
-- No speculative features, no unnecessary abstractions, no premature error handling.
-- Test: "Would a senior engineer call this overcomplicated?" If yes, rewrite.
-
-**3. Surgical Changes**
-- Modify only what is necessary for the current task in priorities.md.
-- Don't improve adjacent code, don't change formatting, don't add unrequested features.
-- Every changed line must trace directly to the current task.
-- Remove only imports/functions YOUR changes made unused.
-
-**4. Goal-Driven Execution**
-- Transform every task into verifiable success criteria BEFORE implementing.
-- For multi-step work, outline steps with corresponding verification checks.
-- Don't declare "done" without evidence (test passes, screenshot, build succeeds).
+- Start: read this file → wiki/handoff.md → wiki/priorities.md → guardrails/errors-to-avoid.md → skills/_synapse-map.md.
+- End (`/wrap`): update handoff, priorities, daily-log; wiki hygiene pass (last-verified, line caps: CLAUDE.md ≤120, handoff ≤80, priorities ≤100).
+- Every mistake becomes a rule: document in guardrails/errors-to-avoid.md (Synapse propagates it).
+- History is never destroyed: `~~superseded~~` markers + `wiki/_archive/` (see `/wiki-gc`).
 ```
 
 ---
@@ -592,15 +508,15 @@ See `skills/pipeline-logger/SKILL.md` for log format and analytics queries.
 
 Before declaring scaffolding complete:
 
-- [ ] CLAUDE.md created and all links resolve
-- [ ] 21+ wiki files created with meaningful content (never empty)
+- [ ] CLAUDE.md created
+- [ ] 12 core wiki files (+ on-demand list in index) created with meaningful content (never empty)
 - [ ] N vertical skills created with valid SKILL.md frontmatter
 - [ ] guardrails/errors-to-avoid.md exists with template
 - [ ] wiki/handoff.md ready for Phase 1
 - [ ] wiki/priorities.md with Phase 1 tasks
 - [ ] daily-log with today's file
 - [ ] Design spec in docs/superpowers/specs/
-- [ ] Structure verification passed (all files + all links)
+- [ ] Structure verification passed: 12 core files exist + v3 artifacts present (docs/phases, .claude/hooks/deny-dangerous.sh, .claude/settings.json)
 - [ ] Git init + first commit (if environment supports it)
 
 ---
@@ -609,9 +525,9 @@ Before declaring scaffolding complete:
 
 | Project Type | Skills | Total Files | Time |
 |-------------|--------|-------------|------|
-| Simple (portfolio, landing page) | 3-4 | 25-28 | ~15 min |
-| Medium (mobile app, SaaS) | 6-8 | 30-35 | ~25 min |
-| Complex (marketplace, platform) | 8-12 | 35-45 | ~40 min |
+| Simple (portfolio, landing page) | 3-4 | 16-18 | ~15 min |
+| Medium (mobile app, SaaS) | 6-8 | 18-22 | ~25 min |
+| Complex (marketplace, platform) | 8-12 | 22-28 | ~40 min |
 
 ---
 

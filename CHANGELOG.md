@@ -5,6 +5,11 @@ All notable changes to the Project Scaffolder plugin are documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.0.1 — 2026-08-03
+
+### Added
+- **Workflow opt-in**: for Complex tasks the Cortex presents execution options (standard pipeline / multi-agent workflow / decomposition) with order-of-magnitude token estimates before delegating; `/scaffold` offers a standard vs orchestrated scaffold for Medium/Complex projects. Multi-agent orchestration always requires the user to type `use a workflow` — never launched autonomously. Choices are logged as `[DECISION]`.
+
 ## 3.0.0 — 2026-08-03 "Fable Edition" (Ondata 1)
 
 ### Added

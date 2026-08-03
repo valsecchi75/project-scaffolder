@@ -145,6 +145,19 @@ Read the brief and extract:
 
 **Rule (Autonomous):** Never ask. Infer domain, tech stack, and target from the brief. If genuinely impossible to infer, use the safest default (e.g., Flutter for mobile, React for web, Freemium for business model). Document every inference as `[HYPOTHESIS]` in the design spec.
 
+### Scaffold execution options (v3.0.1 — workflow opt-in)
+
+After classifying the project size (Simple / Medium / Complex, see Estimated Time), for **Medium and Complex** projects present the scaffold options with cost estimates BEFORE proceeding. The choice is always the user's — never launch multi-agent orchestration on your own.
+
+| Option | How it runs | Est. tokens* | What you get |
+|--------|-------------|--------------|--------------|
+| **Standard scaffold** | This skill: brainstorm → spec → 2 parallel wiki agents → skills → verify | ~40–80k | Full knowledge base, sequential quality |
+| **Orchestrated scaffold** | User types `use a workflow` — parallel agents for wiki, vertical skills, and technical workspace + a completeness critic at the end | ~120–250k (2–4×) | Same output, higher cross-file coherence, best for Complex projects (8+ skills) |
+
+*Order-of-magnitude estimates — always shown before the choice. Log the decision as `[DECISION]` in `wiki/product/decisions.md` (DEC-003).
+
+For Simple projects: skip the question, use the standard scaffold.
+
 ---
 
 ## Phase 2: Brainstorming (use superpowers:brainstorming)
@@ -474,6 +487,7 @@ The CLAUDE.md is the most critical file. It MUST contain:
 2. `/task <description>` — full pipeline: classify → execute → QA → test → learn.
 3. Models per activity follow the Execution Doc routing (Fable: long multi-file work; Opus: architecture; Sonnet: medium tasks; Haiku: mechanical).
 4. Activities marked Parallel=yes can run in separate worktrees (`claude --worktree`).
+5. Complex tasks: the Cortex presents execution options (standard pipeline / multi-agent workflow / decomposition) with token estimates — your choice, logged in the Execution Doc. Multi-agent runs only if you type `use a workflow`.
 
 ## Context Rules
 

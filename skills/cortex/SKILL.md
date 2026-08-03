@@ -54,6 +54,23 @@ Analyze the request and determine:
 | Required skills | Match domain keywords against `skills/` directory names and `skills/_synapse-map.md` connections |
 | UX impact | Does the task touch UI, user-facing text, or user flows? |
 
+### Step 1b: Execution options for Complex tasks (v3.0.1 — workflow opt-in)
+
+When Complexity = **Complex**, STOP before delegating and present the execution options with cost estimates. Never launch multi-agent orchestration on your own — it is always the user's explicit choice.
+
+| Option | How it runs | Est. tokens* | Best when |
+|--------|-------------|--------------|-----------|
+| **Standard pipeline** | 1 specialist + QA + persona (this skill) | ~30–80k | Complex but linear: one subsystem, clear spec |
+| **Multi-agent workflow** | User types `use a workflow` — fan-out to parallel agents, adversarial verification, synthesis | ~150–500k (3–10×) | Migrations, audits, wide refactors, multi-subsystem features, "be comprehensive" requests |
+| **Decomposition** | Split into 2–4 sequential `/task` runs | similar total, spread out | Parts are independent and each is Medium at most |
+
+*Order-of-magnitude estimates — actual cost scales with repo size. Always show the estimate BEFORE the user chooses.
+
+Rules:
+1. Present the table, recommend one option with a one-line reason, and wait for the choice (in Autonomous mode: choose Standard or Decomposition, never Workflow — workflow remains user-explicit).
+2. Log the choice in the Execution Doc activity row and in `wiki/product/decisions.md` as `[DECISION]`.
+3. If the user picks the workflow, remind them to type `use a workflow` in the chat (platform requirement: multi-agent orchestration is opt-in) and hand over: task description, relevant skills, VERIFY criteria.
+
 ### Step 2: Skill lookup
 
 1. Scan `skills/` directory for skills matching the task domain

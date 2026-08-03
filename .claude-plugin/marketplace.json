@@ -8,7 +8,7 @@
     {
       "name": "project-scaffolder",
       "description": "From brief to buildable: generates a persistent project wiki, vertical skills and guardrails, then runs development through a gated task pipeline with QA, phase Execution Docs, model routing, context handoff and destructive-command protection.",
-      "version": "3.0.3",
+      "version": "3.0.4",
       "source": "./",
       "author": {
         "name": "Agent1",

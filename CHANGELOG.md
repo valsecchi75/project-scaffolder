@@ -5,6 +5,11 @@ All notable changes to the Project Scaffolder plugin are documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.0.4 — 2026-08-03
+
+### Added
+- **Design gate** (`design-first` skill + Cortex Step 3b): the first operational task of each phase and every Complex task go through a structured design dialogue BEFORE execution — questions one at a time (max 5, mode-aware), 2-3 approaches with trade-offs, sectioned approval, design doc in `docs/design/`. The approved design has rule-revision authority over scaffold-era artifacts (Execution Doc, architecture, tech-stack, decisions via `[DESIGN-REVISION]`; Working Agreements only with explicit user confirmation). Flags: `--design` / `--no-design`.
+
 ## 3.0.3 — 2026-08-03
 
 ### Added

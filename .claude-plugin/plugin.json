@@ -1,6 +1,6 @@
 {
   "name": "project-scaffolder",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "Turn a short project brief into a ready-to-build Claude Code workspace: persistent 12-page wiki, domain-specific skills, phase Execution Docs with per-activity model routing, a gated /task pipeline with QA and simulated user testing, proactive context handoff, wiki lifecycle with archive, and hooks that guard against destructive commands. 19 slash commands cover the full loop from /scaffold to /ship.",
   "author": {
     "name": "Agent1",

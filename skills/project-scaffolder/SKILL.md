@@ -503,6 +503,7 @@ The CLAUDE.md is the most critical file. It MUST contain:
 3. Models per activity follow the Execution Doc routing (Fable: long multi-file work; Opus: architecture; Sonnet: medium tasks; Haiku: mechanical).
 4. Activities marked Parallel=yes can run in separate worktrees (`claude --worktree`).
 5. Complex tasks: the Cortex presents execution options (standard pipeline / multi-agent workflow / decomposition) with token estimates — your choice, logged in the Execution Doc. Multi-agent runs only if you type `use a workflow`.
+6. **Design gate:** the first task of each phase and every Complex task go through a design dialogue (design-first skill) before execution. The approved design may revise scaffold rules (`[DESIGN-REVISION]` in decisions.md).
 
 ## Working Agreements
 

@@ -136,6 +136,19 @@ connections: []
 6. Save to `skills/[prefix]-[domain]/SKILL.md`
 7. Trigger Synapse to add connections to the synapse map
 
+### Step 3b: Design gate (v3.0.4)
+
+Before delegating, check whether the task needs a design pass (see the **design-first** skill):
+
+| Condition | Behavior |
+|-----------|----------|
+| First operational task of the current phase | Design gate MANDATORY |
+| Complexity = Complex | Design gate MANDATORY |
+| Complexity = Medium | Propose it; user may skip with `--no-design` |
+| Trivial | Skip |
+
+Run the design-first dialogue to an approved design BEFORE Step 4. The approved design becomes the specialist's primary context and may revise scaffold-era rules (Execution Doc, architecture, decisions — see design-first "Rule-Revision Authority"). Log the gate outcome to `logs/pipeline/`.
+
 ### Step 4: Delegate to specialist subagent
 
 Launch a subagent with bounded context:
@@ -148,6 +161,7 @@ Launch a subagent with bounded context:
 | Additional related skills (summary only) | ~300 tokens each, max 2 | If connected |
 | wiki/priorities.md excerpt | ~200 tokens | Always |
 | CLAUDE.md "Working Agreements" section | ~150 tokens | Always (if present) — standing rules that bind every task |
+| Approved design doc (`docs/design/TASK-{id}-design.md`) | ~800 tokens | When the design gate ran — replaces overlapping wiki excerpts |
 | wiki/architecture.md excerpt | ~300 tokens | For technical tasks |
 | wiki/tech-stack.md excerpt | ~200 tokens | For technical tasks |
 

@@ -67,7 +67,7 @@ When Complexity = **Complex**, STOP before delegating and present the execution 
 *Order-of-magnitude estimates — actual cost scales with repo size. Always show the estimate BEFORE the user chooses.
 
 Rules:
-1. Present the table, recommend one option with a one-line reason, and wait for the choice (in Autonomous mode: choose Standard or Decomposition, never Workflow — workflow remains user-explicit).
+1. Present the table, recommend one option with a one-line reason, and wait for the choice. This question is CRITICAL: ask it in Normal AND Autopilot mode (Autopilot never skips it — cost is a user decision). Only in Autonomous mode choose Standard or Decomposition silently (never Workflow — workflow remains user-explicit) and log `[DECISION-AUTO]`.
 2. Log the choice in the Execution Doc activity row and in `wiki/product/decisions.md` as `[DECISION]`.
 3. If the user picks the workflow, remind them to type `use a workflow` in the chat (platform requirement: multi-agent orchestration is opt-in) and hand over: task description, relevant skills, VERIFY criteria.
 

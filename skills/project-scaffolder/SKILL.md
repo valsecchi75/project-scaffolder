@@ -156,6 +156,8 @@ After classifying the project size (Simple / Medium / Complex, see Estimated Tim
 
 *Order-of-magnitude estimates — always shown before the choice. Log the decision as `[DECISION]` in `wiki/product/decisions.md` (DEC-003).
 
+**Mode rule:** this question is CRITICAL — ask it in **Normal AND Autopilot** mode (Autopilot never skips it: cost is a user decision). Only in **Autonomous** mode choose Standard silently and log `[DECISION-AUTO]`.
+
 For Simple projects: skip the question, use the standard scaffold.
 
 ---

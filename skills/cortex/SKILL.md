@@ -147,6 +147,7 @@ Launch a subagent with bounded context:
 | 1 related skill (full) | ~1,500 tokens | If connected in synapse map |
 | Additional related skills (summary only) | ~300 tokens each, max 2 | If connected |
 | wiki/priorities.md excerpt | ~200 tokens | Always |
+| CLAUDE.md "Working Agreements" section | ~150 tokens | Always (if present) — standing rules that bind every task |
 | wiki/architecture.md excerpt | ~300 tokens | For technical tasks |
 | wiki/tech-stack.md excerpt | ~200 tokens | For technical tasks |
 

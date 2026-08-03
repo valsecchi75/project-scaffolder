@@ -189,6 +189,19 @@ After brainstorming, BEFORE proceeding to Phase 3, explicitly list all assumptio
 
 Output: list of decisions made with alternatives considered + assumption table.
 
+### Working Agreements interview (v3.0.3 — mandatory sub-step)
+
+Before generating any file, collect the project's **standing operating rules** — how this user works, beyond this single project. One short message, 4 questions:
+
+1. **Design pipeline** — where does design come from? (e.g. "Design is born in Claude Design; Claude Code ports it 1:1, never reinterprets. Missing design element mid-development → generate an update prompt for Claude Design and wait for the updated artifact")
+2. **Generative models** — which models for images / video / voice, if the project produces media? (or n/a)
+3. **Reference projects** — existing projects (paths) to reuse functionality from, and what to take
+4. **Custom rules** — any other standing directive (approval flows, forbidden tools, cost limits)
+
+**Mode behavior:** Normal and Autopilot ALWAYS ask (this is a critical question — these rules bind every future task). Autonomous fills sensible defaults tagged `[HYPOTHESIS]` and flags the section for user review.
+
+The answers populate the "Working Agreements" section of the generated CLAUDE.md (template below). The Cortex injects this section into every specialist's context.
+
 ---
 
 ## Phase 3: Design Spec
@@ -490,6 +503,15 @@ The CLAUDE.md is the most critical file. It MUST contain:
 3. Models per activity follow the Execution Doc routing (Fable: long multi-file work; Opus: architecture; Sonnet: medium tasks; Haiku: mechanical).
 4. Activities marked Parallel=yes can run in separate worktrees (`claude --worktree`).
 5. Complex tasks: the Cortex presents execution options (standard pipeline / multi-agent workflow / decomposition) with token estimates — your choice, logged in the Execution Doc. Multi-agent runs only if you type `use a workflow`.
+
+## Working Agreements
+
+> Standing operating rules — the Cortex enforces them on every task.
+
+- **Design pipeline:** [from interview — e.g. Claude Design is the source of truth; port 1:1; missing element → update prompt for Claude Design]
+- **Generative models:** [image → ..., video → ..., voice → ... — or n/a]
+- **Reference projects:** [paths + what to reuse — or none]
+- **Custom rules:** [other standing directives — or none]
 
 ## Context Rules
 

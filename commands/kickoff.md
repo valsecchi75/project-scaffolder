@@ -15,6 +15,7 @@ Read-only orientation ritual. Run BEFORE any other work in a new session.
 4. Read `guardrails/errors-to-avoid.md` — what must not repeat
 5. Read `skills/_synapse-map.md` (if exists) — current skill connections
 6. Read `docs/phases/PHASE-{N}-execution.md` (if present) — activity status and model routing for the current phase
+7. Read the "Working Agreements" section of CLAUDE.md (if present) — standing operating rules that bind every task of this session
 
 ## Output format
 
@@ -27,6 +28,7 @@ Read-only orientation ritual. Run BEFORE any other work in a new session.
   1. [task] → VERIFY: [criterion]
   2. ...
   3. ...
+**Working agreements:** [1-line recap of the standing rules, if present]
 **Guardrails to remember:** [max 3 most relevant to current phase]
 **Skills likely needed:** [inferred from priorities + synapse map]
 **Recommended next action:** [one concrete step]

@@ -4,16 +4,22 @@
     "name": "Agent1",
     "url": "https://agent1.it"
   },
+  "description": "Project Scaffolder: a phase-gated, multi-agent development flow for Claude Code.",
+  "allowCrossMarketplaceDependenciesOn": ["interfaces", "garden-skills"],
   "plugins": [
     {
       "name": "project-scaffolder",
-      "description": "From brief to buildable: generates a persistent project wiki, vertical skills and guardrails, then runs development through a gated task pipeline with QA, phase Execution Docs, model routing, context handoff and destructive-command protection.",
-      "version": "3.0.4",
+      "description": "Five sequential phases with hard gates (brainstorm, foundation, design, build, release), eight specialist agents with fixed models, a second-brain wiki, a secrets folder that never leaves the machine, design-system-first artboards with anti-slop and accessibility critique, and a bug hunt after every task.",
+      "version": "4.0.0",
       "source": "./",
       "author": {
         "name": "Agent1",
         "url": "https://agent1.it"
-      }
+      },
+      "dependencies": [
+        { "name": "interfaces", "marketplace": "interfaces" },
+        { "name": "web-design-skills", "marketplace": "garden-skills" }
+      ]
     }
   ]
 }

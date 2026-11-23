@@ -1,214 +1,94 @@
 ---
 name: pipeline-logger
-description: Use to log every operation in the synaptic pipeline. Called by Cortex, Synapse, Persona-Lab, and QA Agent at each step. Maintains daily pipeline logs and a separate error log for fast debugging. Do NOT use directly — other skills call this automatically.
+description: Use when a /task, /bug-hunt, /fix-bug, /milestone-close or /5-release step completes or fails in a phase-managed project, or when /pipeline-stats needs to read the logs.
 ---
 
-# Pipeline Logger — The Black Box Recorder
+# Pipeline Logger — the audit trail
 
-## Overview
-
-Pipeline Logger records every operation that flows through the synaptic pipeline. Like an aircraft's black box, it creates a complete audit trail of what happened, when, why, and what went wrong. Every task, every QA check, every persona test, every synapse propagation — logged with timestamps and outcomes.
-
-**Core principle:** If it happened in the pipeline, it's in the log. If it broke, it's in the error log.
-
-## Log Structure
-
-The scaffolder initializes this structure during Phase 0:
+Every step that flows through the pipeline is written down: who did it, on which model, with what result. Failures are written twice, so they can be found fast.
 
 ```
 logs/
-├── pipeline/
-│   └── YYYY-MM-DD.md       # Daily pipeline log — all operations
-└── errors/
-    └── YYYY-MM-DD-errors.md # Daily error log — failures only
+├── pipeline/YYYY-MM-DD.md          every operation of the day
+└── errors/YYYY-MM-DD-errors.md     failures only, cross-referenced
 ```
 
-## Log Format: Pipeline
+Create the day's files on the first write. One file per day, append only, never deleted.
 
-Each `/task` execution produces a full log block in `logs/pipeline/YYYY-MM-DD.md`:
+## Task block (`logs/pipeline/YYYY-MM-DD.md`)
 
 ```markdown
 ---
 
-## [HH:MM] Task: "{task_description}"
+## [HH:MM] TASK-YYYY-MM-DD-NNN — "{task}"
 
-**ID:** TASK-YYYY-MM-DD-NNN
-**Priority:** normal | high
-**Flags:** --skip-persona, --skill X (if any)
+**Milestone:** M{n} · activity {#} · **Size:** Trivial | Medium | Complex · **Flags:** {…}
+**Execution:** standard | decomposition | workflow (user choice)
 
-### 1. CORTEX — Classification
-- **Domain:** [domain]
-- **Complexity:** trivial | medium | complex
-- **Skill matched:** [skill-name] (existing | generated on-demand)
-- **Connected skills:** [list from synapse map]
-- **UX impact:** yes | no
-- **Decision:** [routing decision from matrix]
+### Plan — architect (Fable)
+- Plan: docs/plans/tasks/{task-id}.md · open questions: {n, answered by the user | none}
+- Skills: {project skills used} · Design section: {registry section | —}
 
-### 2. SPECIALIST — Execution
-- **Skill used:** [skill-name] (maturity: [level])
-- **Files changed:** [list]
-- **Lines added/removed:** +N / -N
-- **Tests run:** [command] → PASS | FAIL
-- **Duration:** ~N min
-- **Status:** completed | failed | escalated
+### Build — builder (Opus) · round {n}
+- Files: {list} · +{added} / -{removed}
+- Steps verified by the builder: {n}/{n} · deviations: {none | …}
 
-### 3. QA AGENT — Verification
-- **Iteration:** N of max 3
-- **SCOPE:** ✅ PASS | ❌ FAIL — [details]
-- **SIMPLICITY:** ✅ PASS | ❌ FAIL — [details]
-- **SURGICAL:** ✅ PASS | ❌ FAIL — [details]
-- **DEAD CODE:** ✅ PASS | ❌ FAIL — [details]
-- **SUCCESS CRITERIA:** ✅ PASS | ❌ FAIL — [details]
-- **Skill checks:** ✅ PASS | ❌ FAIL — [details]
-- **Verdict:** PASS | FAIL
-- **Feedback to specialist:** [if FAIL, what was sent back]
+### Verify — verifier (Fable) · round {n}
+- Verdict: PASS | FAIL · criteria met {n}/{n}
+- Findings: {BLOCKER/MAJOR/MINOR counts; one line each on FAIL}
 
-### 4. PERSONA-LAB — User Simulation
-_(skipped if --skip-persona or no UX impact)_
-- **Personas tested:** N
-- **Persona 1:** [Name] ([archetype]) → ✅ PASS | ❌ BLOCKED at step N | ⚠️ friction
-- **Persona 2:** [Name] ([archetype]) → ✅ PASS | ❌ BLOCKED at step N | ⚠️ friction
-- **Persona 3:** [Name] ([archetype]) → ✅ PASS | ❌ BLOCKED at step N | ⚠️ friction
-- **Verdict:** PASS | FAIL
-- **Recurring pattern:** [if any]
+### Bug hunt — bug-hunter (Fable) · second opinion — sweeper (Sonnet)
+- Findings: {CRITICAL/HIGH/MEDIUM/LOW counts} · confirmed {n} · unconfirmed {n} · leads {n}
+- Classes ruled out: {list}
 
-### 5. SYNAPSE — Learning Propagation
-- **Primary skill updated:** [skill-name] — maturity: [old] → [new]
-- **New patterns added:** N
-- **New anti-patterns added:** N
-- **Propagated to:** [list of skills + what was propagated]
-- **Guardrail created:** ERR-NNN (if applicable)
-- **Synapse map changes:** [connections added/updated]
+### Persona test — persona-tester (Sonnet)
+- {name, archetype} → COMPLETED | BLOCKED at step {n} | frictions {n}
+- Rework: yes (reason) | no
 
-### 6. OUTCOME
-- **Result:** ✅ SUCCESS | ❌ FAILED
-- **Total iterations:** N
-- **Total duration:** ~N min
-- **Skills created:** [if on-demand generation happened]
-- **Skills updated:** [list]
-- **Errors encountered:** N (see error log)
+### Synapse
+- Updated: {skill} ({maturity old → new}) · propagated to: {skills} · guardrail: {ERR-NNN | none}
+
+### Outcome
+- SUCCESS | FAILED | ESCALATED · rounds {n} · evidence: {the VERIFY line}
 ```
 
-## Log Format: Errors
+Sections that did not run say why in one line ("skipped: Trivial", "skipped: no interface change").
 
-Each error gets an entry in `logs/errors/YYYY-MM-DD-errors.md`:
+## Other operations
+
+Same file, shorter blocks headed `## [HH:MM] <OP> — <title>`, for: `BUG-HUNT` (scope, areas, findings table), `FIX-BUG` (KE-NNN, cause, test), `MILESTONE-CLOSE` (mass-run results), `RELEASE` (version, gate verdict), `DESIGN` (section, critic verdict, rounds), `GATE-SKIPPED` (which gate, by which flag).
+
+## Error entry (`logs/errors/YYYY-MM-DD-errors.md`)
 
 ```markdown
 ---
 
-## [HH:MM] ERR in {step} — Task "{task_description}"
+## [HH:MM] {step} failed — TASK-YYYY-MM-DD-NNN
 
-**Task ID:** TASK-YYYY-MM-DD-NNN
-**Step:** CORTEX | SPECIALIST | QA | PERSONA-LAB | SYNAPSE
-**Iteration:** N of max 3
-
-### What happened
-[Description of the error]
-
-### Stack trace / output
-```
-[Actual error output, test failure, or rejection reason]
+**Agent:** {name} ({model}) · **Round:** {n} of 3
+**What happened:** {one paragraph}
+**Evidence:**
+    {the failing command and its output, trimmed}
+**Resolution:** fixed in round {n} | escalated to the user | recorded as KE-NNN / ERR-NNN
 ```
 
-### Resolution
-- **Fixed:** yes | no | escalated to user
-- **How:** [What was changed to fix it]
-- **Guardrail created:** ERR-NNN in errors-to-avoid.md (if applicable)
-- **Skill updated:** [skill-name] (if anti-pattern added)
-- **Propagated:** [yes/no — if Synapse spread the lesson]
+Log an error entry whenever a verifier, bug-hunter confirmation, persona block, synapse validation or gate fails, and whenever a task hits the round limit.
 
-### Impact
-- **Iterations added:** N
-- **Files re-changed:** [list]
-```
+## Never log
 
-## Logging Rules
+- File contents or full diffs: file names and line counts are enough.
+- The user's messages verbatim: the task description is enough.
+- Secret values, tokens or personal data, even when the error is about them.
 
-### When to log
-
-| Event | Where to log | Required |
-|-------|-------------|----------|
-| /task starts | pipeline/ | Always |
-| Cortex classifies | pipeline/ | Always |
-| Specialist completes | pipeline/ | Always |
-| Specialist fails | pipeline/ + errors/ | Always |
-| QA passes | pipeline/ | Always |
-| QA rejects | pipeline/ + errors/ | Always |
-| Persona passes | pipeline/ | If run |
-| Persona rejects | pipeline/ + errors/ | If run |
-| Synapse propagates | pipeline/ | Always |
-| Synapse validation fails | pipeline/ + errors/ | Always |
-| Task completes | pipeline/ | Always |
-| Task fails (max iterations) | pipeline/ + errors/ | Always |
-| On-demand skill generated | pipeline/ | Always |
-
-### File management
-
-- **One file per day.** Append to existing file if same day.
-- **Task ID format:** `TASK-YYYY-MM-DD-NNN` where NNN is auto-incremented per day (001, 002...).
-- **Timestamps:** Use `[HH:MM]` format at the start of each block.
-- **Error cross-reference:** Pipeline log links to error log entries. Error log links back to task ID.
-- **Never delete logs.** Logs are append-only. Old logs stay for historical analysis.
-
-### What NOT to log
-
-- File contents (too verbose — just log filenames and line counts)
-- Full skill content (just log skill name and maturity)
-- User conversations (privacy — only log task descriptions)
-- Secrets, tokens, or credentials (obviously)
-
-## How Other Skills Call the Logger
-
-Each skill in the pipeline is responsible for logging its own step. The logger provides the format — skills write directly to the log files.
-
-**Cortex** logs: classification, routing decision, skill selection, loop iterations, final outcome.
-**QA Agent** logs: each check result, verdict, feedback sent.
-**Persona-Lab** logs: each persona result, frictions, verdict.
-**Synapse** logs: skill updates, propagations, guardrail creation, map changes.
-
-### Log initialization
-
-At the start of each `/task`, Cortex creates the day's log files if they don't exist:
+## Queries for `/pipeline-stats`
 
 ```bash
-mkdir -p logs/pipeline logs/errors
-touch "logs/pipeline/$(date +%Y-%m-%d).md"
-touch "logs/errors/$(date +%Y-%m-%d)-errors.md"
+grep -c '^## \[.*\] TASK-' logs/pipeline/*.md                  # tasks per day
+grep -h 'Verdict: FAIL' logs/pipeline/*.md | wc -l              # verifier rejections
+grep -h '^- Findings:' logs/pipeline/*.md                       # bug-hunt yield
+grep -h 'confirmed' logs/pipeline/*.md                          # confirmed vs unconfirmed
+grep -h '^- SUCCESS\|^- FAILED\|^- ESCALATED' logs/pipeline/*.md | sort | uniq -c
+grep -h '^\*\*Agent:\*\*' logs/errors/*.md | sort | uniq -c     # failures by agent
 ```
 
-## Analytics Queries
-
-The structured log format enables quick analysis:
-
-```bash
-# How many tasks today?
-grep -c "^## \[" logs/pipeline/2026-04-16.md
-
-# How many errors today?
-grep -c "^## \[" logs/errors/2026-04-16-errors.md
-
-# Which skills used most?
-grep "Skill used:" logs/pipeline/*.md | sort | uniq -c | sort -rn
-
-# QA rejection rate
-grep "Verdict: FAIL" logs/pipeline/*.md | wc -l
-
-# Average iterations per task
-grep "Total iterations:" logs/pipeline/*.md
-
-# Which step produces most errors?
-grep "Step:" logs/errors/*.md | sort | uniq -c | sort -rn
-
-# Skills with most on-demand generation
-grep "generated on-demand" logs/pipeline/*.md | wc -l
-```
-
-## Anti-Patterns
-
-| Don't | Do instead |
-|-------|-----------|
-| Skip logging when task is trivial | Log everything — trivial tasks still generate useful patterns |
-| Log full file diffs | Log filenames + line counts only |
-| Delete old logs to save space | Archive to `logs/archive/` if needed, never delete |
-| Log user messages verbatim | Log task descriptions only (privacy) |
-| Forget to log errors separately | Always dual-log: pipeline/ AND errors/ |
+`/pipeline-stats [--week|--month|--all]` reports: tasks run, first-round pass rate, average rounds, escalations, bug-hunt findings confirmed per task, the classes that keep coming back, persona blocks, and the skills used most. Report bad numbers plainly and flag anomalies (for example "verifier rejects over half the tasks this week: review the plans").

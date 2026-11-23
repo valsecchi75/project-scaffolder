@@ -1,419 +1,132 @@
-# Project Scaffolder — Fable Edition
+# Project Scaffolder
 
-**Skills that learn, connect, and grow — like neurons in a living project.**
+**A sequential, multi-agent way to build a product with Claude Code — from the first question to the release tag.**
 
-Generate a complete project knowledge base from a single brief, then orchestrate development with an AI project leader, quality pipeline, and skills that compound expertise over time. One brief in, entire project structure out — then every task makes the system smarter.
-
----
-
-## The Problem
-
-Every new software project starts from zero. Without structured context, AI coding agents:
-
-- **Waste 60-70% of tokens** re-explaining the project each session
-- **Repeat solved errors** because nobody documented them
-- **Produce inconsistent code** across sessions (different patterns, naming, architecture)
-- **Suffer context rot** — quality degrades in long conversations as the agent loses track of earlier decisions
-
-The cost compounds: decisions made and forgotten get remade differently, bugs resurface, and the codebase diverges from its original vision.
-
-## The Solution
-
-Project Scaffolder creates a **persistent knowledge layer** that survives between sessions. It combines three proven patterns:
-
-| Pattern | Inspiration | What It Does |
-|---------|-------------|-------------|
-| **Persistent Markdown wiki** | [Andrej Karpathy's gist](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) | Durable project memory: decisions, architecture, errors, priorities. Read automatically every session. |
-| **Vertical skills** | Claude Code skills system | Specialized guides per area (frontend, domain logic, marketing, release). Contain reusable code patterns, rules, checklists. |
-| **Structured handoff** | Original pattern | Session transition protocol that prevents context rot. One phase per chat, wiki as persistent memory. |
-| **Karpathy Coding Discipline** | [Karpathy's LLM coding pitfalls](https://github.com/forrestchang/andrej-karpathy-skills) | Behavioral guardrails injected into every generated skill and CLAUDE.md: Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution. |
-
-**Result:** The AI agent restarts every session with complete context in seconds, without wasting tokens.
-
-## What's New in v3.0 — Fable Edition
-
-**v3.0 Fable Edition:** phase Execution Docs with model routing, proactive context handoff, wiki lifecycle with archive, destructive-command guardrail hooks, auto-format hook. v1.x solves the cold-start problem (scaffolding). v2.0 introduced the development lifecycle (Cortex + Synapse + Persona-Lab). v2.1 adds the `pipeline-logger` skill for full audit trail and analytics. See [CHANGELOG.md](CHANGELOG.md) for details.
-
-| Component | What it does |
-|-----------|-------------|
-| **Cortex** (`/task`) | AI project leader — classifies tasks, delegates to specialists, runs QA and user testing, manages the feedback loop |
-| **Synapse** | Nervous system — propagates learning between connected skills, maintains connection map, prevents repeated errors |
-| **Persona-Lab** | Simulated focus group — tests features with diverse user profiles, catches UX issues before release |
-| **QA Agent** | Ephemeral code reviewer — Karpathy compliance, test verification, surgical change validation |
-| **Skill Lifecycle** | Skills grow from Seed → Growing → Mature → Expert as they accumulate real-world experience |
-| **On-demand Skills** | Cortex generates new skills mid-session when a task requires uncovered expertise |
-
-### The Development Pipeline
+Most agent sessions fail the same way: the agent starts building before the problem is understood, designs while it codes, and declares victory without proof. Project Scaffolder makes the order of work explicit and enforces it. Five phases, one kind of work each, one approved artifact to leave each one.
 
 ```
-/task "Implement feature X"
-    │
-    ▼
-CORTEX ── classify ── skill lookup/generate ── delegate to specialist
-    │                                              │
-    │                                    ┌─────────┘
-    │                                    ▼
-    │                              QA AGENT (verify)
-    │                                    │
-    │                              PERSONA-LAB (test)
-    │                                    │
-    │                              SYNAPSE (learn + propagate)
-    │                                    │
-    └◀──────────── task complete ────────┘
+1 BRAINSTORM ──► 2 FOUNDATION ──► 3 DESIGN ──► 4 BUILD ──► 5 RELEASE
+ questions only   second brain     design       platform,    whole-project
+                  skills, agents   system,      milestones,  debug, gate,
+                  secrets/         artboards,   tasks with   version
+                                   Artifacts    bug hunts
 ```
 
-## What It Generates
-
-From a single brief like:
-
-> "Mobile app for tracking digital subscriptions. Target: users who lose track of recurring charges. Flutter."
-
-The scaffolder produces:
-
-### 1. CLAUDE.md — Central Hub
-The project's single source of truth. Read automatically by Claude Code at every session start. Contains navigation to all files, skill references, operative rules, and session management protocol.
-
-### 2. Wiki — 12 Core Pages + On-Demand
-
-12 core pages are always generated up front; everything else is created on-demand, the first time a task actually needs it, and listed in `wiki/index.md` under "on-demand (not yet created)".
-
-**Core (12, always generated):**
-
-| Section | Files | Purpose |
-|---------|-------|---------|
-| **Hub** | CLAUDE.md, wiki/index.md | Central hub + navigation map |
-| **Product** | overview, priorities, product/roadmap, product/decisions | What to build, in what order, why each choice was made |
-| **Technical** | architecture, tech-stack | How it's built: structure, tools, conventions |
-| **Debug** | debugging/known-errors | Error memory: what didn't work and why |
-| **Guardrails** | guardrails/errors-to-avoid | Hard-won lessons, anti-patterns |
-| **Operations** | log, handoff | Timeline, session transitions |
-
-**On-demand (created on first real use):**
-
-| Section | Files | Purpose |
-|---------|-------|---------|
-| **Identity** | vision, glossary | Why it exists, shared vocabulary |
-| **Product** | product/features | Feature-level detail |
-| **Technical** | scripts, workflows, prompts, setup-claude-code | Automations, session setup |
-| **Design** | branding, ux/ui-decisions | Visual identity, interface principles |
-| **Debug** | debugging/failed-experiments | What didn't work and why |
-| **Incubator** | incubator/raw-ideas, incubator/future-directions | Unvalidated ideas, long-term explorations |
-
-### 3. Vertical Skills — Domain-Specific Guides
-
-Each skill is a `SKILL.md` with YAML frontmatter, containing code patterns, rules, checklists, and anti-patterns specific to one area. Skills are auto-selected based on your tech stack and domain:
-
-**Always generated:**
-- `release-gate` — 5-stage pre-release verification orchestrator
-- `brand-voice` — Tone of voice, copy patterns, language rules
-- `product-strategy` — RICE scoring, competitor analysis, feature evaluation
-
-**By tech stack** (e.g., Flutter):
-- `flutter-patterns` — Themes, state management, folder structure, model conventions
-
-**By domain** (e.g., subscriptions):
-- `subscription-domain` — Renewal calculations, cost normalization, validation rules
-
-**By distribution** (e.g., Play Store):
-- `play-store-launch` — ASO, store listing, release management
-
-### 4. Guardrails
-`errors-to-avoid.md` — Cumulative record of errors, traps, and anti-patterns. Prevents repeating mistakes across sessions.
-
-### 5. Design Spec
-Complete project specification derived from brainstorming: architecture, data models, business model, roadmap, and skill ecosystem.
-
-### 6. Handoff Protocol
-Structured session transition system. Each session ends by updating `handoff.md` with what was done, what remains, blockers, and which files the next session should read. The next session picks up instantly.
-
-## Interaction Modes
-
-Control how much Claude asks during scaffolding AND all subsequent development sessions.
-
-| Mode | Questions | Best For |
-|------|-----------|----------|
-| **Normal** | All questions asked | First-time users, learning the methodology |
-| **Autopilot** | Only critical questions (~50% fewer) | Experienced users who trust reasonable defaults |
-| **Autonomous** | Zero questions (unless truly blocked) | Well-defined projects, maximum speed |
+## Install
 
 ```
-/scaffold --mode autopilot Mobile app for tracking expenses. Target: millennials. Flutter.
+/plugin marketplace add jakubkrehel/skills
+/plugin marketplace add ConardLi/garden-skills
+/plugin install project-scaffolder --marketplace valsecchi75/project-scaffolder
 ```
 
-The mode is written into the generated `CLAUDE.md`, so every future session respects your preference. All autonomous decisions are documented in `wiki/product/decisions.md` with full rationale — nothing is lost, you just aren't interrupted.
+The first two lines add the marketplaces of the two design plugins this one depends on (`interfaces` and `web-design-skills`), so they are installed with it. Then run `/setup-check`.
 
-**Recommended:** Autopilot for most users. Autonomous for experienced developers with clear project specs.
+Requirements: Claude Code 2.1.323 or later, and bash (Git Bash on Windows) for the hooks.
 
-## Token Optimization
+## The five phases
 
-v3 token diet: 12-file core wiki, injection budgets, one report per task.
+| Phase | Command | What happens | Leaves with |
+|---|---|---|---|
+| 1 | `/1-brainstorm` | Questions only, one at a time: problem, users, outcome, scope, constraints, business, brand, risks, working agreements. No solutions, no stack, no files. | `docs/brief/BRIEF.md` approved by you |
+| 2 | `/2-foundation` | The project's second brain: `raw/` sources, the wiki, the `CLAUDE.md` schema, project skills, the agent roster, a `secrets/` folder that never leaves your machine. | Structure check green, your confirmation |
+| 3 | `/3-design` | Design system first. Then each section as artboards (all states, all viewports), an anti-slop audit and an accessibility check of color and type, your approval, and one Artifact page per section. | Every section approved in `wiki/design/registry.md` |
+| 4 | `/4-build` | Platform decision (you choose), milestone plans, then `/task` for each activity: plan → build → verify → bug hunt → persona test. | Milestones closed with evidence |
+| 5 | `/5-release` | Whole-project debug with the strongest model, a full test run, fixes, the release gate, version, changelog, tag. Never pushes. | Release report approved, tag created |
 
-## Karpathy Coding Discipline
+**The gates are mechanical, not just advice.** `.scaffolder/phase` records the current phase and a hook refuses writes that belong to a later one: in phase 1 only the brief can be written, in phases 2 and 3 no application code. Interaction modes (Normal, Autopilot, Autonomous) apply from phase 4 and never skip a gate.
 
-Inspired by [Andrej Karpathy's observations](https://github.com/forrestchang/andrej-karpathy-skills) on LLM coding pitfalls, the scaffolder integrates behavioral guardrails at every level of the generated project:
+## Agents and models
 
-| Where | What's Added |
-|-------|-------------|
-| **CLAUDE.md template** | "Coding Discipline" section with 4 principles: Think Before Coding, Simplicity First, Surgical Changes, Goal-Driven Execution |
-| **Phase 2 (Brainstorming)** | Mandatory "Assumption Surfacing" step — all inferences tagged `[HYPOTHESIS]` before proceeding |
-| **Design Spec** | Dedicated "Assumptions" section with confidence levels |
-| **priorities.md** | Every task requires verifiable success criteria (`→ VERIFY: ...`) |
-| **Technical skills** | "Behavioral Rules" section in every generated skill template |
-| **Release-gate** | Stage 6: Simplicity Check — scope creep, over-engineering, dead code, speculative features |
-| **Anti-patterns** | 3 new entries: no speculative features, no silent assumptions, no adjacent code changes |
+The routing is fixed in each agent's definition, so it holds even when the orchestrator forgets.
 
-**Why this matters:** The original Karpathy plugin is a single generic file. Project Scaffolder makes those principles **contextual** — embedded in domain-specific skills, project-specific guardrails, and verifiable at release time.
+| Agent | Model | Job |
+|---|---|---|
+| `architect` | Fable | Platform decision, milestone and task plans |
+| `verifier` | Fable | Checks a task against its plan with fresh evidence |
+| `bug-hunter` | Fable | Proves defects: on the diff after every task, across the project before release |
+| `design-critic` | Fable | Slop audit, contrast and type accessibility, design-system fidelity |
+| `builder` | Opus | Implements an approved task plan |
+| `designer` | Opus | Design-system files and artboards |
+| `sweeper` | Sonnet | Full suites, second opinions on findings, project-wide sweeps |
+| `persona-tester` | Sonnet | Walks a changed flow as one end user |
 
-## How It Works
+Phase commands run the orchestrating session on Fable. Haiku is not used.
 
-```
-User Brief
-    │
-    ▼
-┌─────────────────┐
-│  0. Mode         │  Select interaction mode (Normal/Autopilot/Autonomous)
-│  1. Analyze      │  Extract domain, tech stack, target, business model
-│  2. Brainstorm   │  Architecture, UX, business, technical decisions
-│  3. Design Spec  │  Complete project specification
-│  4. Structure    │  Create directories
-│  5. Wiki         │  2 parallel agents generate 12 core wiki pages
-│  6. Skills       │  Generate domain-specific vertical skills
-│  7. Verify       │  All files exist, all links resolve
-│  8. Handoff      │  Ready for Phase 1 development
-└─────────────────┘
-    │
-    ▼
-"claude" → "Proceed with Phase 1"
-```
+**When the Fable usage limit is reached**, everything pinned to Fable stops until the limit resets: the phase commands and the four Fable agents. To keep working on Opus in the meantime, start Claude Code with `CLAUDE_CODE_SUBAGENT_MODEL=opus` and `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` (forces every subagent to Opus, overriding the agents' frontmatter), and load the phase skill directly instead of the command (for example "load project-scaffolder:cortex and run a task: …"), since skills carry no model pin. Verification done this way is weaker: rerun the bug hunt of a release on Fable once the limit resets.
 
-**Time:** 15 minutes (simple project) to 40 minutes (complex platform).
+## The second brain
 
-## Installation
+Each project follows Andrej Karpathy's [LLM-wiki pattern](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f):
 
-### From GitHub
+- `raw/` — immutable sources: the original brief, references, research.
+- `wiki/` — maintained by the agents: index first, one concept per page, citations, contradictions marked instead of overwritten, an append-only log.
+- `CLAUDE.md` — the schema: how the wiki is kept and how work flows.
 
-```bash
-claude plugin add valsecchi75/project-scaffolder
-```
+`/wiki-ingest` adds a source and updates every page it touches. `/wiki-lint` finds contradictions, orphans, missing pages, stale pages and drift from the code. Lessons from tasks propagate into the project skills (Synapse).
 
-### From local directory
+## Secrets
 
-```bash
-claude plugin add /path/to/project-scaffolder
-```
+`secrets/` holds hand-over files with API keys. The agent may read them to use a key locally. The secrets guard blocks every way out it can see: committing while the folder is not git-ignored or is tracked, copying a value into another file (except git-ignored `.env` files), inlining a value in a shell command, publishing a file or page containing one as an Artifact. Uploading a file from `secrets/` over the network asks first. It is a guard rail, not a data-loss-prevention system.
 
-## Usage
+## Design
 
-### Option 1: Slash Command
+Design starts from a design system — one of your existing Design System artifacts, or a new one — and every section is drawn as artboards before any code exists. The skills used:
 
-```
-/scaffold Mobile app for tracking gym workouts. Target: fitness enthusiasts. Flutter + Dart.
-```
+| Step | Skill |
+|---|---|
+| Design system and artboard composition | `web-design-skills:web-design-engineer` (ConardLi/garden-skills) |
+| Anti-slop gate while composing, and the audit | `no-ai-design-slop`, `audit-ai-design-slop` (MengTo/Skills, bundled) |
+| Typography, color, layout, accessibility, final review | `interfaces:better-*` (jakubkrehel/skills) |
 
-### Option 2: With Mode Flag
+Approved sections are saved as Artifact pages, one per section, linked from the design registry. Build ports them one to one; a missing element stops the task and reopens the section with `/3-design --section <name>`.
 
-```
-/scaffold --mode autopilot SaaS platform for restaurant reservations. React + Node. Target: Italian restaurant owners.
-```
+## Commands
 
-### Option 3: Natural Language
+**Phases**
 
-```
-New project: E-commerce site for handmade jewelry. My customers are women 25-45 who value artisan quality.
-```
+| Command | |
+|---|---|
+| `/1-brainstorm [idea]` | Questions only, until the brief is approved |
+| `/2-foundation [--upgrade]` | Second brain, skills, agents, secrets. `--upgrade` migrates a v3 project |
+| `/3-design [--section <name>]` | Design system, artboards, critique, Artifacts |
+| `/4-build [--status]` | Platform, milestone plan, build status |
+| `/5-release [version]` | Debug, gate, version, tag |
 
-The skill detects that you're starting a new project and activates automatically. If no mode is specified, you'll be asked to choose.
+**Inside a phase**
 
-## Slash Commands Reference
+| Command | |
+|---|---|
+| `/task <what>` | One piece of build work through the full pipeline |
+| `/milestone-plan [Mn]` · `/milestone-close [Mn]` | Plan and close a milestone |
+| `/bug-hunt [--diff \| --area \| --all]` | Look for unreported defects (read-only) |
+| `/fix-bug <symptom>` | Reproduce, root-cause, fix, prove, record |
+| `/test-sweep [scope]` | Every test, lint, type check, build and audit |
 
-The plugin ships 19 slash commands grouped by workflow phase. Each command is focused, predictable, and safe to rerun.
+**Service**
 
-### Project lifecycle
+| Command | |
+|---|---|
+| `/session-start` · `/session-end [--commit]` | Open and close a session; the start also checks whether Claude Code changed |
+| `/phase-status` | Where the project is and the next command |
+| `/wiki-ingest <source>` · `/wiki-lint` | Feed and check the second brain |
+| `/decision <title>` · `/log-error <title>` | Record a decision or an understood error |
+| `/skill-new <area>` · `/skill-map` | Create a project skill; show the skill network |
+| `/pipeline-stats [--week]` | Is the pipeline helping? |
+| `/setup-check` | Dependencies, agents, hooks, secrets setup |
 
-| Command | Purpose | Writes files? |
-|---------|---------|---------------|
-| `/scaffold` | Generate a complete project knowledge base from a brief | Yes — creates CLAUDE.md, wiki, skills, guardrails |
-| `/phase-doc` | Generate the phase Execution Doc — hard gate for `/task` | Yes |
-| `/task` | Assign work to the Cortex pipeline (classify → execute → QA → test → learn) | Yes — source code + logs |
+## Upgrading from v3
 
-### Session lifecycle
+v4 is a breaking release: the 19 v3 commands are replaced. Open a v3 project and the session start tells you; run `/2-foundation --upgrade` to add the phase state, move project skills to `.claude/skills/`, rename Execution Docs to milestone plans, create `raw/`, `secrets/` and the agent roster, and remove the duplicated hook entries after asking. See [CHANGELOG.md](CHANGELOG.md).
 
-| Command | Purpose | Writes files? |
-|---------|---------|---------------|
-| `/kickoff` | Start-of-session briefing: reads CLAUDE.md, handoff, priorities, guardrails, synapse map | No |
-| `/wrap` | End-of-session ritual: updates handoff, priorities, daily log; optional `--commit` | Yes |
-| `/phase-shift <N>` | Formal transition between phases; archives current phase, opens the next | Yes |
+## Development
 
-### Development
-
-| Command | Purpose | Writes files? |
-|---------|---------|---------------|
-| `/plan <task>` | Write an implementation plan with verifiable steps — before any code | Yes — plan file |
-| `/implement <plan>` | Execute a plan through Cortex, step-by-step with QA on each | Yes — source code |
-| `/review [scope]` | Code review on a diff using Karpathy checklist (SCOPE, SIMPLICITY, SURGICAL, DEAD CODE) | No |
-| `/debug <symptom>` | Systematic debugging: reproduce → isolate → diagnose → fix → document | Yes — known-errors, guardrails |
-| `/test [scope]` | Run tests with consistent reporting; scopes: `--changed`, `--all`, `--coverage`, `--file` | No (logs only) |
-
-### Release and quality
-
-| Command | Purpose | Writes files? |
-|---------|---------|---------------|
-| `/gate` | Run the 6-stage release-gate skill (includes Simplicity Check); fail-fast | No (logs only) |
-| `/ship [--patch\|--minor\|--major]` | Full release pipeline: gate + version bump + changelog + tag. Never pushes automatically | Yes |
-
-### Knowledge management
-
-| Command | Purpose | Writes files? |
-|---------|---------|---------------|
-| `/decide <title>` | Document a decision with alternatives and rationale; auto-increments DEC-NNN | Yes — decisions.md |
-| `/error <title>` | Log a bug atomically across known-errors, guardrails, and propagate via Synapse | Yes |
-| `/wiki-gc` | Archive stale wiki content, enforce line caps | Yes |
-
-### Skills and analytics
-
-| Command | Purpose | Writes files? |
-|---------|---------|---------------|
-| `/skills [--status]` | Show the skill map with maturity, connections, pending propagations | No |
-| `/forge <domain>` | Create a new vertical skill on-demand for a specific domain | Yes — skills/ |
-| `/stats [timeframe]` | Pipeline metrics from logs: volume, quality, rejection reasons, skill usage | No |
-
-### Typical daily flow
-
-```
-/kickoff                             # See where you are
-/phase-doc                           # Mandatory at the start of a phase — the Cortex gate refuses /task and /implement without it
-/plan Add monthly-spend widget       # Think first
-/implement @latest                   # Execute the plan through Cortex
-/review                              # Sanity-check the diff
-/decide Widget refresh = 15 min      # Record the decision
-/wrap --commit                       # Close the session cleanly
-```
-
-## After Scaffolding: The Daily Workflow
-
-```
-1. Open terminal
-2. cd into project folder
-3. claude
-4. "Proceed with [what you need to do]"
-5. Work...
-6. "Update handoff and daily log"
-7. /exit
-```
-
-The wiki maintains memory between sessions. Every time you reopen Claude Code, it knows exactly where you left off.
-
-## Session Management: One Phase Per Chat
-
-A key innovation of this methodology: **each development phase runs in its own chat session**.
-
-**Why:** Long conversations degrade AI response quality (context rot). After thousands of tokens, the agent forgets earlier decisions, repeats mistakes, and produces declining-quality output.
-
-**How:** At the end of each session, the agent updates `handoff.md`, `priorities.md`, and the daily log. The next session reads `CLAUDE.md` → `handoff.md` and starts fresh with complete context.
-
-**Result:** Every session is as sharp as the first one.
-
-## Measured Benefits
-
-| Benefit | Without methodology | With methodology |
-|---------|-------------------|-----------------|
-| Project setup | 2-4 hours manual | 15-40 min automated |
-| Tokens per session | 100% (baseline) | 30-40% (60-70% savings) |
-| Code consistency | Degrades over time | Stable (skills as guardrails) |
-| New session onboarding | 5-10 min of context | Automatic (CLAUDE.md + handoff) |
-| Repeated errors | Frequent | Rare (documented guardrails) |
-| Decision tracking | Lost in chat | Permanent in wiki |
-| Parallelism | Sequential | Parallel subagents (2 wiki agents) |
-
-## Supported Project Types
-
-| Type | Example Skills Generated |
-|------|------------------------|
-| **Mobile app (Flutter)** | flutter-patterns, [domain]-domain, brand-voice, growth-marketing, play-store-launch, release-gate |
-| **Mobile app (React Native)** | react-native-patterns, [domain]-domain, brand-voice, app-store-launch, release-gate |
-| **Web app (React/Next.js)** | react-patterns, [domain]-domain, brand-voice, seo-strategy, deploy-pipeline, release-gate |
-| **API / Backend** | api-patterns, [domain]-domain, database-schema, auth-security, deploy-pipeline, release-gate |
-| **E-commerce** | frontend-patterns, product-catalog, payment-flow, brand-voice, seo-strategy, release-gate |
-| **SaaS** | frontend-patterns, [domain]-domain, pricing-strategy, onboarding-flow, growth-marketing, release-gate |
-
-## Real-World Results (v2.x baseline)
-
-Tested on a production mobile app project (Android, Flutter, freemium model):
-
-| Metric | Value |
-|--------|-------|
-| Files generated (Phase 0) | 33 |
-| Wiki pages | 21 |
-| Vertical skills | 8 |
-| Documented decisions | 7 |
-| Catalogued errors | 1 |
-| Phase 0 time | ~1 session |
-| Estimated token savings | 60-70% in subsequent sessions |
-
-## Project Structure
-
-```
-project-scaffolder/
-├── .claude-plugin/
-│   ├── plugin.json              # Plugin metadata (v3.0.0)
-│   └── marketplace.json         # Marketplace entry
-├── commands/
-│   ├── scaffold.md              # /scaffold — generate project structure
-│   ├── phase-doc.md             # /phase-doc — generate phase Execution Doc
-│   ├── task.md                  # /task — assign work to Cortex
-│   ├── kickoff.md               # /kickoff — start-of-session ritual
-│   ├── wrap.md                  # /wrap — end-of-session ritual
-│   ├── phase-shift.md           # /phase-shift — transition phases
-│   ├── plan.md                  # /plan — write plan before coding
-│   ├── implement.md             # /implement — execute a plan
-│   ├── review.md                # /review — code review on diff
-│   ├── debug.md                 # /debug — systematic debugging
-│   ├── test.md                  # /test — run tests with report
-│   ├── gate.md                  # /gate — release-gate verification
-│   ├── ship.md                  # /ship — full release pipeline
-│   ├── decide.md                # /decide — document decision
-│   ├── error.md                 # /error — log bug atomically
-│   ├── wiki-gc.md               # /wiki-gc — wiki archive & line-cap enforcement
-│   ├── skills.md                # /skills — show skill map
-│   ├── forge.md                 # /forge — create skill on-demand
-│   └── stats.md                 # /stats — pipeline metrics
-├── skills/
-│   ├── project-scaffolder/SKILL.md   # Phase 0 scaffolding
-│   ├── cortex/SKILL.md               # Project Leader orchestration
-│   ├── synapse/SKILL.md              # Learning propagation engine
-│   ├── persona-lab/SKILL.md          # End-user simulation
-│   ├── context-manager/SKILL.md      # Proactive context handoff (v3)
-│   └── pipeline-logger/SKILL.md      # Audit trail & analytics
-├── hooks/
-│   ├── deny-dangerous.sh             # PreToolUse guard (bash)
-│   ├── deny-dangerous.ps1            # PreToolUse guard (PowerShell variant)
-│   ├── dangerous-patterns.txt        # Case-insensitive destructive-command patterns
-│   ├── dangerous-patterns-case-sensitive.txt  # Case-sensitive patterns (e.g. git branch -D)
-│   ├── auto-format.sh                # PostToolUse formatter
-│   └── hooks.json                    # Hook wiring (PreToolUse + PostToolUse)
-├── templates/
-│   └── execution-doc.md              # Template for docs/phases/PHASE-{N}-execution.md
-├── CHANGELOG.md
-├── LICENSE
-└── README.md
-```
-
-## Contributing
-
-Found a domain or tech stack that's not covered? Want to improve a template?
-
-1. Fork this repository
-2. Add your domain/stack templates to the skill file
-3. Test on a real project
-4. Submit a pull request
+`CLAUDE.md` holds the maintainer rules; `wiki/` the plugin's own development memory. Before committing: `claude plugin validate .` and `bash tests/test-hooks.sh`.
 
 ## Credits
 
-- **Methodology:** Developed by [agent1.it](https://agent1.it)
-- **Knowledge pattern:** Inspired by [Andrej Karpathy's Markdown wiki gist](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)
-- **Built with:** [Claude Code](https://claude.com/product/claude-code) by Anthropic
-- **Skills system:** [Claude Code plugins](https://claude.com/plugins)
+Methodology by [agent1.it](https://agent1.it). Built on ideas from Andrej Karpathy's LLM-wiki gist and [obra/superpowers](https://github.com/obra/superpowers). Bundled and depended-on skills: see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## License
 
-MIT License — use it, fork it, improve it.
+MIT.

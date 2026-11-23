@@ -1,6 +1,6 @@
 ---
 name: synapse
-description: Use after a task completes to propagate learning across connected skills. Triggered by Cortex at the end of every successful task pipeline. Also triggers on "propagate learning", "update skills", "synapse", or when skills need cross-pollination after discovering shared patterns or errors.
+description: Use when a task, a bug fix or a release in a phase-managed project ends with a lesson worth keeping, or when the user asks to propagate learning or update the project skills.
 ---
 
 # Synapse — The Nervous System
@@ -13,19 +13,20 @@ Synapse makes skills learn from experience and communicate with each other. Afte
 
 ## When Called
 
-Synapse is called by Cortex at Step 8 of the task pipeline. It receives a "learning packet" containing:
+Synapse is called by the cortex when a task closes, by the bug-hunt skill when a bug is recorded, and by the release skill after a release. It receives a "learning packet" containing:
 - Task description and outcome
 - Errors encountered during implementation
 - Patterns that worked well
 - QA feedback (what was rejected and why)
-- Persona-Lab feedback (UX frictions found)
+- Persona-tester feedback (frictions found)
+- Bug-hunt findings confirmed and the classes they belong to
 - Decisions made during the task
 - Primary skill used
 - Files changed
 
 ## The Synapse Map
 
-Maintained at `skills/_synapse-map.md`. This file tracks all skill relationships and propagation state.
+Maintained at `wiki/skills-map.md`. This file tracks all skill relationships and propagation state.
 
 ### Map format
 
@@ -48,7 +49,7 @@ Maintained at `skills/_synapse-map.md`. This file tracks all skill relationships
 
 ### Map initialization
 
-When a new project is scaffolded (Phase 0), the scaffolder creates the initial synapse map by analyzing all generated skills and finding shared concepts. See the project-scaffolder skill for the initialization logic.
+The foundation skill creates the initial map in phase 2 by analyzing the generated project skills for shared concepts; stack skills generated in phase 4 are added with `/skill-new`.
 
 ## The Four Operations
 
@@ -56,7 +57,7 @@ When a new project is scaffolded (Phase 0), the scaffolder creates the initial s
 
 **Merge safety protocol:**
 
-1. **Backup before rewrite.** Copy the current skill to `skills/[name]/.history/SKILL-YYYY-MM-DD-N.md` before any modification. This provides rollback capability.
+1. **Backup before rewrite.** Copy the current skill to `.claude/skills/[name]/.history/SKILL-YYYY-MM-DD-N.md` before any modification. This provides rollback capability.
 
 2. **Target canonical sections only.** Integrate new knowledge into ONLY these sections:
    - "Code Patterns" — add validated patterns
@@ -68,12 +69,12 @@ When a new project is scaffolded (Phase 0), the scaffolder creates the initial s
 
 4. **Post-refactor validation.** After rewriting, verify:
    - The refactored skill retains ALL anti-pattern entries from the backup
-   - The frontmatter is valid (name, description, maturity, connections)
+   - The frontmatter is valid (name, description, and the metadata map with maturity and connections)
    - The skill is not shorter than 80% of the backup (guards against content loss)
    - If validation fails → restore from backup → fall back to append-only mode (add `[SYNAPSE]` note)
 
 **Metadata updates (Operation 1 responsibility):**
-- Increment `tasks_completed` in frontmatter
+- Increment `metadata.tasks_completed` in the frontmatter (project skills keep their counters under `metadata:`)
 - Update `last_synapse_update` to today's date
 - Recalculate `maturity`:
   - Seed: 0 tasks
@@ -104,7 +105,7 @@ and IT locale — always use DateFormat(..., 'it_IT'). See errors-to-avoid.md.
 - Explicit references (one skill mentions another's domain)
 
 **Updating the synapse map:**
-After propagation, update `skills/_synapse-map.md`:
+After propagation, update `wiki/skills-map.md`:
 - Add/update connections for newly discovered relationships
 - Increment `pending_notes` counter for each propagated skill
 - Add entry to "Recent Propagations" table
@@ -122,10 +123,10 @@ If the learning includes an error or anti-pattern:
 
 ### Operation 4: Synapse map hygiene
 
-Triggered at end of each session (called by the session-end checklist):
+Triggered by `/session-end` (context-manager skill):
 - Remove connections referencing deleted skills
 - Trim "Recent Propagations" to last 20 entries
-- Archive older entries to `skills/_synapse-history.md`
+- Archive older entries to `wiki/_archive/skills-map-history.md`
 - Flag orphaned skills (connected to nothing) for user review
 - Report: "Synapse map: N skills, M connections, K propagations this session"
 
@@ -137,7 +138,7 @@ Specialist discovers: DateFormat crashes with IT locale on some Android versions
 
 SYNAPSE executes:
 
-1. BACKUP: skills/qs-android-widget/.history/SKILL-2026-04-16-1.md
+1. BACKUP: .claude/skills/qs-android-widget/.history/SKILL-2026-04-16-1.md
 
 2. UPDATE qs-android-widget:
    - Add to "Common Mistakes":
@@ -170,7 +171,7 @@ SYNAPSE executes:
    - Fix: Always pass 'it_IT' as second parameter
    - Skills affected: qs-android-widget, qs-subscription-domain, qs-flutter-patterns
 
-8. UPDATE skills/_synapse-map.md with new propagation entries
+8. UPDATE wiki/skills-map.md with new propagation entries
 ```
 
 ## Logging

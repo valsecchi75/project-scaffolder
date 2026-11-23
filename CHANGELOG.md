@@ -5,6 +5,35 @@ All notable changes to the Project Scaffolder plugin are documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 4.0.0 — 2026-11-23 — Sequential Edition
+
+Breaking: the v3 commands are replaced. v3 projects migrate with `/2-foundation --upgrade`.
+
+### Added
+- **Five sequential phases with hard gates**: `/1-brainstorm` (questions only, one at a time, until the brief is approved), `/2-foundation`, `/3-design`, `/4-build`, `/5-release`. State in `.scaffolder/phase`; skill `phase-flow` holds the contract.
+- **Phase guard hook** (`hooks/phase-guard.sh`): refuses writes that belong to a later phase — only the brief and `raw/` in phase 1, no application code in phases 2 and 3.
+- **Eight agents with fixed models**: architect, verifier, bug-hunter, design-critic (Fable); builder, designer (Opus); sweeper, persona-tester (Sonnet). No Haiku.
+- **Design studio** (phase 3): design system first, artboards per section with every state and viewport, anti-slop audit, contrast and typography accessibility check, user approval, one Artifact page per section, `wiki/design/registry.md`.
+- **Bug hunt after every task** and a **whole-project debug before every release**, with a proof gate (reproducible now, observed, reachable, not known noise) and a Sonnet second opinion on every critical or high finding. Commands `/bug-hunt`, `/fix-bug`.
+- **`secrets/` folder** and **secrets guard hook**: readable locally, never committed, copied, inlined in commands or published as an Artifact.
+- **Second brain after Karpathy's LLM wiki**: immutable `raw/`, maintained `wiki/`, `CLAUDE.md` as schema; `/wiki-ingest`, `/wiki-lint`; parsable log lines.
+- **SessionStart bootstrap**: in a phase-managed project, every session starts knowing the phase, its rules and the next command; v3 projects get an upgrade hint.
+- **Claude Code changelog check**: `/session-start` reads the newer changelog entries when the installed version changed (`wiki/claude-code.md` in each project). The plugin repository keeps its own registry in `wiki/claude-code-changelog.md`.
+- Dependencies on `interfaces` (jakubkrehel/skills) and `web-design-skills` (ConardLi/garden-skills); bundled `no-ai-design-slop` and `audit-ai-design-slop` (MengTo/Skills, MIT); `/setup-check`.
+- `tests/test-hooks.sh`: 57 regression cases for every hook, Windows paths included.
+
+### Changed
+- Commands renamed by phase and purpose: `/task`, `/milestone-plan`, `/milestone-close`, `/test-sweep`, `/session-start`, `/session-end`, `/phase-status`, `/decision`, `/log-error`, `/skill-new`, `/skill-map`, `/pipeline-stats`. Every command declares its model.
+- The roadmap unit is the **milestone**; the v3 Execution Doc becomes the milestone plan (`docs/plans/MILESTONE-<n>.md`, with an Agent column).
+- Platform and stack are chosen in phase 4 against the constraints gathered in phase 1, not at scaffold time.
+- Project skills are generated in `.claude/skills/`, where Claude Code discovers them; their counters move under `metadata:`. The skills map moves to `wiki/skills-map.md`.
+- Auto-format runs only in projects managed by the plugin.
+
+### Removed
+- `/scaffold`, `/phase-doc`, `/kickoff`, `/wrap`, `/phase-shift`, `/plan`, `/implement`, `/review`, `/debug`, `/test`, `/gate`, `/ship`, `/decide`, `/error`, `/wiki-gc`, `/skills`, `/forge`, `/stats` (replaced as above).
+- `design-first` skill (superseded by the design studio and the architect's task plans), `persona-lab` skill (now the `persona-tester` agent), `templates/execution-doc.md`.
+- Copying the guard hooks into each project, which made them run twice.
+
 ## 3.0.4 — 2026-08-03
 
 ### Added

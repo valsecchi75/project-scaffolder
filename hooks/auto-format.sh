@@ -3,6 +3,11 @@
 # Formats the edited file with the stack formatter when available. Never blocks: always exits 0.
 
 INPUT=$(cat)
+
+# Only in projects this plugin manages: a plugin-level hook must not reformat
+# files in unrelated repositories that merely have the plugin enabled.
+[ -d "${CLAUDE_PROJECT_DIR:-$PWD}/.scaffolder" ] || exit 0
+
 FILE=$(printf '%s' "$INPUT" | grep -oE '"file_path"[[:space:]]*:[[:space:]]*"[^"]+"' | head -1 | sed 's/.*:[[:space:]]*"//; s/"$//')
 [ -z "$FILE" ] && exit 0
 FILE=$(printf '%s' "$FILE" | sed 's#\\\\#/#g; s#\([^/]\)//*#\1/#g')   # JSON-escaped Windows paths -> forward slashes (collapse stray multi-slashes, keep a leading UNC // prefix intact)

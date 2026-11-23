@@ -1,3 +1,6 @@
 .superpowers/
 docs/superpowers/
 *.xlsx
+secrets/
+.env
+.env.*

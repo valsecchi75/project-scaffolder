@@ -8,6 +8,4 @@ Load the `project-scaffolder:phase-flow` skill, then the `project-scaffolder:rel
 
 Confirmed CRITICAL and HIGH findings are fixed before release. The user approves the release explicitly. Pushing, deploying or submitting to a store happen only if the user asks.
 
-Designed for a Fable session; the hunters and re-checkers keep their own models. The command does not switch models; on another model, say so in one line and suggest `/model fable`.
-
 Arguments: $ARGUMENTS

@@ -1,5 +1,5 @@
 ---
-description: Setup check - Git Bash, hooks, workflows, fallback model, Artifact, auto memory, companion plugins, agents, project phase and secrets. Read-only; prints exact fixes.
+description: Setup check - Git Bash, hooks, workflows, fallback model, Artifact, auto memory, Code Mode, companion plugins, agents, project phase and secrets. Read-only; prints exact fixes.
 context: fork
 agent: general-purpose
 model: sonnet
@@ -30,11 +30,13 @@ You run in a fresh subagent with no conversation history. Check what project-sca
 7. **Fallback model**: `fallbackModel`, or the `--fallback-model` flag. The highest-precedence file that sets it supplies the whole chain; files do not merge. Unset → `WARN`: when Fable is overloaded the request fails and the user retries or switches by hand. Fix (a plugin cannot set it): add `"fallbackModel": ["opus"]` to `~/.claude/settings.json`. Also `WARN` when `availableModels` leaves out `fable`, `opus` or `sonnet`. Say plainly: a turn served by the fallback is not Fable planning or verification, and a report produced that way must say so.
 8. **Artifact** (phase 3 publishes one page per section). Off when `"enableArtifact": false` or `"disableArtifact": true` in any file, `CLAUDE_CODE_DISABLE_ARTIFACT=1`, `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` set, `CLAUDE_CODE_USE_BEDROCK`, `CLAUDE_CODE_USE_VERTEX` or `CLAUDE_CODE_USE_FOUNDRY` set, `ANTHROPIC_API_KEY` or an `apiKeyHelper` setting present (they take precedence over the claude.ai login, and an API-key session cannot publish), or Claude Code older than 2.1.281. The supported surfaces are the CLI and the desktop app; the VS Code extension is not listed, so `WARN` that it may lack the tool. Report the cause. Fix for a login cause: remove the competing credential, then `/login` with "Claude account with subscription". Degraded: phase 3 runs in Local mode, with one self-contained page per section at `design/<slug>/index.html`, recorded by path in `wiki/design/registry.md`.
 9. **Auto memory** (personal notes outside the repo; also required by any agent that declares `memory`). Off when `"autoMemoryEnabled": false` or `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` → `WARN`. Fix: the toggle in `/memory`. The project wiki does not depend on it.
+10. **Code Mode** (experimental: Claude writes JavaScript that calls its tools, several calls per script). On when `CLAUDE_CODE_EXPERIMENTAL_CODE_MODE=1` is in the shell environment or in the `env` block of `~/.claude/settings.json`; the same key in a project's `.claude/settings.json` does not turn it on. In the VS Code panel (`CLAUDE_CODE_ENTRYPOINT` is `claude-vscode`) it does not run: `OK - not available in the VS Code panel`. In a terminal session, off → `TIP`, fix: add `"CLAUDE_CODE_EXPERIMENTAL_CODE_MODE": "1"` to the `env` block of `~/.claude/settings.json`, then start a new terminal session. Say that the plugin's guards still check every tool call a script makes (they set `onFailure: "block"`), and that managed settings can keep it off.
+
 **Current project** (skip when there is no `.scaffolder/` folder)
 
-10. `.scaffolder/phase` holds one of brainstorm, foundation, design, build, release.
-11. `secrets/` exists, `git check-ignore -q secrets/probe` succeeds, `git ls-files secrets` is empty; `.env.example` lists names without values.
-12. Project skills live in `.claude/skills/` (a top-level `skills/` folder means `/2-foundation --upgrade`).
-13. No entries in `.claude/settings.json` that duplicate the plugin's guard or format hooks.
+11. `.scaffolder/phase` holds one of brainstorm, foundation, design, build, release.
+12. `secrets/` exists, `git check-ignore -q secrets/probe` succeeds, `git ls-files secrets` is empty; `.env.example` lists names without values.
+13. Project skills live in `.claude/skills/` (a top-level `skills/` folder means `/2-foundation --upgrade`).
+14. No entries in `.claude/settings.json` that duplicate the plugin's guard or format hooks.
 
-**Report** (this is all the main conversation receives): one line per item, `N. Name: OK | WARN | MISSING | FAIL - finding`, then a **Fixes** list with the exact command or settings line for each item that is not `OK`, most severe first. No narration of the steps you ran; at most 25 lines.
+**Report** (this is all the main conversation receives): one line per item, `N. Name: OK | TIP | WARN | MISSING | FAIL - finding`, then a **Fixes** list with the exact command or settings line for each item that is not `OK`, most severe first (`TIP` last: optional). No narration of the steps you ran; at most 25 lines.

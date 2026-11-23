@@ -36,7 +36,7 @@ Measured on the plugin itself, 4.0.0 against 4.1.0 (tokens estimated as bytes / 
 | Model switch when a command starts (full uncached re-read of the conversation) | 18 commands | **none** |
 | `/phase-status` | 1,834 tokens | **345 tokens (−81%)** — a script reads the files |
 | Status, statistics and wiki checks | read by the model | counted by bundled scripts, short output |
-| Hook and script regression tests | 57 | **188** |
+| Hook and script regression tests | 57 | **217** |
 | Behaviour evals of the gates (`claude plugin eval`) | — | 3 cases |
 | Quality score on a micro-project, blind Fable review (rubric below) | **57**/100 | **81**/100 |
 
@@ -66,12 +66,12 @@ Requirements: Claude Code 2.1.323 or later, and bash (Git Bash on Windows) for t
 | 4 | `/4-build` | Platform decision (you choose), milestone plans, then `/task` for each activity: plan → build → verify → bug hunt → persona test. `/improve` between milestones. | Milestones closed with evidence |
 | 5 | `/5-release` | A green full test run, then 1, 5, 10 or 100 verification rounds as you choose, fixes, the release gate, version, changelog, tag. Never pushes. | Release report approved, tag created |
 
-**The gates are mechanical, not just advice.** `.scaffolder/phase` records the current phase. A hook refuses writes that belong to a later phase (in phase 1 only the brief, `raw/` and the notebook; in phases 2 and 3 no application code), and another refuses a phase or build command typed too early, before it loads. Interaction modes (Normal, Autopilot, Autonomous) apply from phase 4 and never skip a gate.
+**The gates are mechanical, not just advice.** `.scaffolder/phase` records the current phase. A hook refuses writes that belong to a later phase (in phase 1 only the brief and `raw/`; in phases 2 and 3 no application code), and another refuses a phase or build command typed too early, before it loads: also `/2-foundation` before you approve the brief and `/4-build` before you close the design phase. Interaction modes (Normal, Autopilot, Autonomous) apply from phase 4 and never skip a gate.
 
 ## What you see while you work
 
 - **Session banner:** every session in a phase-managed project opens with one line shown only to you: phase, next command, and whether the session runs the model the flow is designed for.
-- **Command gate:** `/4-build` in the brainstorm, `/task` or `/improve` before phase 4 — refused, with the command to run instead.
+- **Command gate:** `/4-build` in the brainstorm or before the design phase is closed, `/2-foundation` before the brief is approved, `/task` or `/improve` before phase 4 — refused, with the command to run instead.
 - **`/phase-status`:** what is approved, what blocks the gate, what you can run now, the next command.
 - **`/todo`:** what is waiting, P1 first and oldest first, with flags for items left too long.
 - **Compaction:** before every compaction a hook writes the phase, the plan, the handoff's age and the uncommitted files to `.scaffolder/compact-snapshot.md`; the session after it reads that file first. Plain `/compact` is enough.

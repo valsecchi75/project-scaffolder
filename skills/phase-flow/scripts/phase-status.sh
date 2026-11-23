@@ -4,11 +4,17 @@
 # prints a few fixed-format lines (phase, artifacts, gate, next) so the report
 # comes from the files, not from guesses. Always exits 0.
 #
-#   bash phase-status.sh [project-dir]
+#   bash phase-status.sh [--facts] [project-dir]
 #
 # Without project-dir it starts in the current directory and walks up to the
 # nearest .scaffolder/phase (stopping at the git root), so a session whose
 # shell moved into a subfolder still reports the right project.
+#
+# --facts prints only the gate facts, as key=value lines, and stops there:
+#   phase=<word|none>  brief=<status|missing>  interface=<yes|no|unknown>
+#   design=<complete|open>
+# hooks/command-gate.sh reads them, so the typed-command gate and the report
+# share one reading of the brief and the log.
 #
 # Sources: docs/brief/BRIEF.md frontmatter (status, approved, has_interface),
 # wiki/log.md lines "phase | Foundation complete", "phase | Design complete",
@@ -18,6 +24,8 @@
 
 set -u
 CAP="$(cd "$(dirname "$0")/.." 2>/dev/null && pwd)/capabilities.md"
+FACTS=""
+[ "${1:-}" = --facts ] && { FACTS=1; shift; }
 cd "${1:-.}" 2>/dev/null || { echo "phase-status: cannot enter ${1:-.}"; exit 0; }
 if [ $# -eq 0 ]; then
   d=$PWD
@@ -25,6 +33,26 @@ if [ $# -eq 0 ]; then
     d=$(dirname "$d")
   done
   [ -f "$d/.scaffolder/phase" ] && cd "$d"
+fi
+
+# Frontmatter value of key $1 in the brief (first match, CR and spaces stripped).
+fm() { sed -n "s/^$1:[[:space:]]*//p" docs/brief/BRIEF.md 2>/dev/null | head -n 1 | tr -d '\r' | sed 's/[[:space:]]*$//'; }
+logged() { [ -f wiki/log.md ] && grep -qF "$1" wiki/log.md; }
+
+# The gate facts. A draft still shows the template placeholder ({yes|no}).
+BS=""; BA=""; UI=""
+if [ -f docs/brief/BRIEF.md ]; then
+  BS=$(fm status); BA=$(fm approved); UI=$(fm has_interface)
+  case "$UI" in \{*) UI="" ;; esac
+  case "$BA" in \{*) BA="" ;; esac
+fi
+
+if [ -n "$FACTS" ]; then
+  P=none; [ -f .scaffolder/phase ] && P=$(head -n 1 .scaffolder/phase | tr -cd 'a-z')
+  B=missing; [ -f docs/brief/BRIEF.md ] && B=${BS:-none}
+  D=open; logged "phase | Design complete" && D=complete
+  printf 'phase=%s\nbrief=%s\ninterface=%s\ndesign=%s\n' "${P:-none}" "$B" "${UI:-unknown}" "$D"
+  exit 0
 fi
 
 if [ ! -f .scaffolder/phase ]; then
@@ -40,21 +68,13 @@ case "$PHASE" in
 esac
 echo "phase: $N of 5 · $PHASE"
 
-# Frontmatter value of key $1 in the brief (first match, CR and spaces stripped).
-fm() { sed -n "s/^$1:[[:space:]]*//p" docs/brief/BRIEF.md 2>/dev/null | head -n 1 | tr -d '\r' | sed 's/[[:space:]]*$//'; }
-logged() { [ -f wiki/log.md ] && grep -qF "$1" wiki/log.md; }
-
 GATE=""; NEXT=""
 gate() { GATE="${GATE:+$GATE; }$1"; }
 
 # 1 brief
 if [ -f docs/brief/BRIEF.md ]; then
-  BS=$(fm status); BA=$(fm approved); UI=$(fm has_interface)
-  case "$UI" in \{*) UI="" ;; esac   # a draft still shows the template placeholder
-  case "$BA" in \{*) BA="" ;; esac
   echo "brief: ${BS:-no status}${BA:+ ($BA)} · interface: ${UI:-unknown}"
 else
-  BS=""; UI=""
   echo "brief: missing (docs/brief/BRIEF.md)"
 fi
 if [ "$N" -eq 1 ]; then

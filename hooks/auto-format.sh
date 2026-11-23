@@ -1,16 +1,23 @@
 #!/usr/bin/env bash
-# PostToolUse auto-format (project-scaffolder v3).
-# Formats the edited file with the stack formatter when available. Never blocks: always exits 0.
+# PostToolUse auto-format (project-scaffolder v4).
+# Formats the edited file with the stack formatter when available.
+# Never blocks: always exits 0 (no onFailure in hooks.json).
+#
+# Only in projects this plugin manages, found like the other hooks find them
+# (lib.sh: the nearest .scaffolder/phase above the input's cwd, then
+# CLAUDE_PROJECT_DIR), and only for files inside that project: a plugin-level
+# hook must not reformat files in unrelated repositories.
 
 INPUT=$(cat)
+. "$(dirname "$0")/lib.sh" 2>/dev/null || exit 0
 
-# Only in projects this plugin manages: a plugin-level hook must not reformat
-# files in unrelated repositories that merely have the plugin enabled.
-[ -d "${CLAUDE_PROJECT_DIR:-$PWD}/.scaffolder" ] || exit 0
+[ -f "$PS_PROJECT/.scaffolder/phase" ] || exit 0
 
-FILE=$(printf '%s' "$INPUT" | grep -oE '"file_path"[[:space:]]*:[[:space:]]*"[^"]+"' | head -1 | sed 's/.*:[[:space:]]*"//; s/"$//')
-[ -z "$FILE" ] && exit 0
-FILE=$(printf '%s' "$FILE" | sed 's#\\\\#/#g; s#\([^/]\)//*#\1/#g')   # JSON-escaped Windows paths -> forward slashes (collapse stray multi-slashes, keep a leading UNC // prefix intact)
+FILE=$(ps_field "$INPUT" file_path)
+[ -n "$FILE" ] || exit 0
+[ -n "$(ps_rel "$FILE")" ] || exit 0          # outside the project
+FILE=$(ps_fs "$FILE" | sed 's#\([^/]\)//*#\1/#g')   # forward slashes; a leading UNC // stays
+case "$FILE" in /*|[A-Za-z]:/*) ;; *) FILE="$PS_PROJECT/$FILE" ;; esac
 [ -f "$FILE" ] || exit 0
 
 case "$FILE" in

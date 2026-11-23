@@ -37,3 +37,12 @@ Loops as workflows, command gate, session banner, PreCompact snapshot, read-only
 
 ## [2026-11-23] review | Fable 5.2 pre-release review and blind quality judge
 Release review: SHIP AFTER FIXES, no blocker; HIGH findings on the secrets guard (formats not recognised, non-secrets blocking calls) and on unquoted script paths, fixed with test cases, plus the MEDIUM/LOW ones (git add arguments, staged content on commit/push, Edit removing a value, .env only when ignored, fork sessions, research sweep failures). Blind judge on the Sorsi micro-project: 81/100 against 57/100 for 4.0.0, higher on all twelve dimensions; its five remaining weaknesses are T-001..T-005 in `wiki/todo.md`.
+
+## [2026-11-23] review | Claude Code changelog check (v4.1.1 session)
+No entry after 2.1.330. Code Mode (2.1.323+) recorded in claude-code-changelog.md for `/setup-check`.
+
+## [2026-11-23] decision | DEC-022 to DEC-025
+Command gate on gate facts through `phase-status.sh --facts`; build output scanned for keys with the guard's shared secret map; blocked reads of `secrets/` recommended; phase commands kept under about 4.5k tokens.
+
+## [2026-11-23] release | v4.1.1 (prepared)
+T-001 to T-007 of `wiki/todo.md`: fact gates for `/2-foundation` and `/4-build`, loops sized to the project, `build-secrets.sh` in the release gate and the architect's no-keys-on-device rule, lighter phase commands, Block reads as the phase-2 default, Code Mode in `/setup-check` with composed-command guard tests, auto-format on the input's cwd, `deny-dangerous.ps1` removed. Branch `v4.1.1`; not pushed.

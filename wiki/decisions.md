@@ -166,3 +166,35 @@
 **Choice:** B (regression review of the improvement branch).
 **Why:** A created `wiki/` before phase 2 and contradicted DEC-001, the brainstorm skill ("do not create the wiki now"), the session bootstrap, `/1-brainstorm`, the README and the `no-wiki-yet` eval grader. Phase 1 already has two capture places, so nothing is lost.
 **Consequences:** `tests/test-hooks.sh` expects a deny for `wiki/todo.md` in phase 1. Same review: the secrets guard's outward check reads the secret values once and checks named files in batches (60 files went from about 40 s, past the 15 s timeout that refuses the call, to about 1 s).
+
+## DEC-022: The command gate checks gate facts, read by the /phase-status script
+
+**Date:** 2026-11-23 · **Status:** [DECISION] (v4.1.1, T-001)
+**Options:** A — the gate checks only the phase word; the approved brief and the closed design phase are checked by the skills' instructions · B — the gate also refuses `/2-foundation` without `status: approved` and `/4-build` without `phase | Design complete` (unless `has_interface: no`), with its own parsing · C — as B, reading the facts from `phase-status.sh --facts`.
+**Choice:** C.
+**Why:** the blind judge on 4.1.0 found both steps passing on instructions alone. A second parser of the brief and the log would drift from the one `/phase-status` shows the user; one script keeps the report and the refusal in agreement.
+**Consequences:** `2-foundation` joins the `UserPromptExpansion` matcher; `--upgrade` passes. The fact gates apply only to the step forward from brainstorm, foundation or design. The gate still fails open: without the script it falls back to the phase check.
+
+## DEC-023: Keys never ship; the release gate scans the build with the guard's own secret map
+
+**Date:** 2026-11-23 · **Status:** [DECISION] (v4.1.1, T-003)
+**Options:** A — the guard's repository checks are enough · B — a release-gate grep with its own idea of a secret · C — `ps_secret_map` moves to `hooks/secrets-lib.sh`, sourced by the guard and by `skills/release/scripts/build-secrets.sh`, which scans the build output and prints file and variable names only.
+**Choice:** C, plus an architect rule: a client-only product that needs a keyed service gets a proxy or a keyless service.
+**Why:** a key read at build time (a bundler env prefix) lands in the files users download, where no guard looks; two recognisers would disagree on what a secret is.
+**Consequences:** a `leak:` line is a CRITICAL release finding (fix, rotate, rebuild). The script exits 2, never "clean", when it cannot read `secrets/` (a sandbox applying a Read deny rule) or nothing is built. `wiki/tech-stack.md` records the build output folder at the platform decision. The guard fails closed without `secrets-lib.sh`.
+
+## DEC-024: Blocking reads of `secrets/` is the recommended answer in phase 2
+
+**Date:** 2026-11-23 · **Status:** [DECISION] (v4.1.1, T-005) · **Refines:** DEC-004, DEC-016
+**Options:** A — Readable recommended, Block reads opt-in (4.1.0) · B — Block reads recommended, keys loaded in the shell (`set -a; . secrets/<file>.env; set +a; <command>`), Readable still offered.
+**Choice:** B.
+**Why:** whatever Claude reads lands in the transcript; loading a key inside the command that uses it needs no read at all. DEC-004's purpose (keys usable locally) holds either way.
+**Consequences:** the foundation explains the trade-off and checks that loading still works once a key file is in place; when a sandbox applies the rule to every process, it says so and offers Readable. `phase-flow` states the shell-loading rule for every phase.
+
+## DEC-025: Phase commands stay under about 4.5k tokens at load
+
+**Date:** 2026-11-23 · **Status:** [DECISION] (v4.1.1, T-004)
+**Options:** A — keep 4.1.0's skills (3.5–5.8k tokens per phase command, against 2.8–4.5k in 4.0) · B — dispatch and AskUserQuestion rules only in `phase-flow`; steps that run once per project in files read when their case applies (`cortex/platform.md`, `design-studio/entry.md`, `phase-flow/fallback.md`); command bodies reduced to the pointer.
+**Choice:** B.
+**Why:** every phase command loads `phase-flow` plus its phase skill; the duplicated dispatch blocks and once-only steps were paid on every run and every resume.
+**Consequences:** measure = bytes / 4 of the command, `phase-flow/SKILL.md` and the phase skill at the committed version (the method that reproduces the judge's figures). `/task`, `/milestone-plan` and `/milestone-close` now load `phase-flow` too, unless the session already has it. A change that pushes a phase command past ~4.5k moves text out, not in.

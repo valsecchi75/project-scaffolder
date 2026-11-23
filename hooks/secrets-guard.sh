@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # PreToolUse guard for the secrets/ folder (project-scaffolder v4).
-# Contract: secrets/ holds hand-over files with API keys. The agent may READ
-# them to use the keys locally. Nothing in there may ever be published:
+# Contract: secrets/ holds hand-over files with API keys. Commands load them
+# locally (set -a; . secrets/x.env; set +a; cmd); whether Claude may also
+# read them is the project's DEC-003. Nothing in there may ever be published:
 # not to git, not to an Artifact, not copied into wiki, docs, logs or code,
 # not inlined in a shell command (commands end up in transcripts and logs),
 # not sent through an MCP server, a web request or a message to another session.
@@ -13,77 +14,14 @@
 
 INPUT=$(cat)
 . "$(dirname "$0")/lib.sh" || exit 1
+# Which values count as secrets: ps_secret_map, shared with the release gate.
+. "$(dirname "$0")/secrets-lib.sh" || exit 1
 
 # secrets/ is git-ignored, so a worktree has none: then the values come from
 # the checkout the session started in.
 SECRETS="$PS_PROJECT/secrets"
 [ -d "$SECRETS" ] || [ -z "${CLAUDE_PROJECT_DIR:-}" ] || SECRETS="$CLAUDE_PROJECT_DIR/secrets"
 [ -d "$SECRETS" ] || exit 0
-
-# Candidate secret values, one "value<TAB>label" line each; the label (file
-# and variable name or line, never the value) goes into deny reasons. One awk
-# process reads every file, so the cost does not grow with a process per file.
-# The awk text must never hold two adjacent braces: find -exec ... + would take
-# them for its file placeholder.
-#   NAME=value, NAME: value, "name": "value"  -> the value, unless NAME says
-#       it is an identifier (…_ID, _REF, _HOST, _USER, _EMAIL, _REGION, _URL…)
-#       and holds no key word; at least 12 characters for KEY/SECRET/TOKEN/
-#       PASS…-like names, 16 for any other name.
-#   URLs (named or bare)  -> the password of user:pass@, and long key-like
-#       path or query parts; the whole URL too when its name is key-like
-#       (webhooks, DSNs). A bare URL or a hostname is never a secret itself.
-#   any other text        -> key-like tokens: 20+ characters of
-#       [A-Za-z0-9_+/=.~-] with a letter and a digit, not a hostname or an
-#       e-mail (free text, Markdown tables, Bearer lines, minified JSON,
-#       PEM and base64 lines, "\n"-joined private keys).
-ps_secret_map() {
-  find "$SECRETS" -type f ! -iname 'README.md' -size -256k -exec awk -v root="$SECRETS/" '
-function host(s) { return s ~ /^[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z][a-z]+$/ }
-function mail(s) { return s ~ /^[^@]+@[^@]+\.[a-z][a-z]+$/ }
-function strong(s) {
-  return length(s) >= 20 && s ~ /[0-9]/ && s ~ /[A-Za-z]/ && s ~ /^[A-Za-z0-9_+\/=.~-]+$/ && !host(s) && !mail(s)
-}
-function emit(v, l) { if (v != "" && !(v in seen)) { seen[v] = 1; print v "\t" l } }
-function urlparts(u, l,   ui, pw, n, i, p) {
-  sub(/^[A-Za-z][A-Za-z0-9+.-]*:\/\//, "", u)
-  if (match(u, /^[^\/@]*@/)) {
-    ui = substr(u, 1, RLENGTH - 1); u = substr(u, RLENGTH + 1)
-    if (index(ui, ":") > 0) { pw = substr(ui, index(ui, ":") + 1); if (length(pw) >= 8) emit(pw, l) }
-  }
-  n = split(u, p, /[\/?&=#:]/)
-  for (i = 1; i <= n; i++) if (strong(p[i])) emit(p[i], l)
-}
-function tokens(t, l,   n, i, s, k) {
-  gsub(/\\n/, " ", t)
-  n = split(t, k, /[ \t"\047`,;{(<>)}|\[\]]+/)
-  for (i = 1; i <= n; i++) {
-    s = k[i]
-    if (s ~ /:\/\//) { urlparts(s, l); continue }
-    sub(/^[A-Za-z_][A-Za-z0-9_.-]*[=:]/, "", s)
-    if (strong(s)) emit(s, l)
-  }
-}
-{
-  f = FILENAME; if (index(f, root) == 1) f = substr(f, length(root) + 1)
-  line = $0; gsub(/\r/, "", line)
-  if (line ~ /^[ \t]*(#|$)/) next
-  if (line !~ /^[ \t]*[A-Za-z][A-Za-z0-9+.-]*:\/\// && match(line, /^[ \t]*(export[ \t]+)?["\047]?[A-Za-z_][A-Za-z0-9_.-]*["\047]?[ \t]*[=:]/)) {
-    name = substr(line, 1, RLENGTH); val = substr(line, RLENGTH + 1)
-    gsub(/^[ \t]*(export[ \t]+)?["\047]?|["\047]?[ \t]*[=:]$/, "", name)
-    sub(/^[ \t]+/, "", val); sub(/[ \t]+#.*$/, "", val); sub(/[ \t]+$/, "", val); sub(/[,;]+$/, "", val)
-    sub(/^["\047`]/, "", val); sub(/["\047`]$/, "", val)
-    u = toupper(name); l = f " " name
-    keyish = u ~ /KEY|SECRET|TOKEN|PASS|PWD|PRIVATE|AUTH|CRED|SIGN|DSN|SALT|COOKIE|WEBHOOK/
-    ident = !keyish && u ~ /(^|_)(ID|REF|HOST|HOSTNAME|DOMAIN|PORT|REGION|ZONE|USER|USERNAME|EMAIL|NAME|ENV|MODE|VERSION|LOCALE|TZ|TIMEZONE|BUCKET|PROJECT|ORG|ACCOUNT|ENDPOINT|URL)$/
-    if (val ~ /:\/\//) { urlparts(val, l); if (keyish && val !~ /[ \t]/) emit(val, l); next }
-    if (ident) next
-    if (val ~ /[ \t]|\\n/) { tokens(val, l); next }
-    if (length(val) >= (keyish ? 12 : 16) && !host(val) && !mail(val)) emit(val, l)
-    next
-  }
-  tokens(line, f " line " FNR)
-}' {} + 2>/dev/null
-}
 
 # The values are read once per run (PS_VALUES, below), never once per check:
 # a timeout refuses the call (onFailure "block"), and on Windows every

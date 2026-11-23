@@ -4,6 +4,6 @@ argument-hint: "[milestone, e.g. M2]"
 disable-model-invocation: true
 ---
 
-Load the `project-scaffolder:cortex` skill and run **Level 2 — Milestone plan** for: $ARGUMENTS (default: the current milestone in `CLAUDE.md`).
+Load the `project-scaffolder:phase-flow` skill (unless this session already has it), then the `project-scaffolder:cortex` skill, and run **Level 2 — Milestone plan** for: $ARGUMENTS (default: the current milestone in `CLAUDE.md`).
 
 The `architect` agent writes the plan; the user approves it before any `/task` runs.

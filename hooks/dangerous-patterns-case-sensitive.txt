@@ -1,6 +1,6 @@
-# Convenzione: i pattern in QUESTO file sono matchati CASE-SENSITIVE dagli
-# script guardia (deny-dangerous.sh usa grep -qE senza -i; deny-dangerous.ps1
-# usa -cmatch invece del normale -match case-insensitive). Usare questo file
+# Convenzione: i pattern in QUESTO file sono matchati CASE-SENSITIVE dallo
+# script guardia (deny-dangerous.sh usa grep -qE senza -i, mentre
+# dangerous-patterns.txt è letto con -i). Usare questo file
 # solo quando maiuscolo/minuscolo cambia il significato del comando — es.
 # "git branch -D" (force-delete di branch non mergiati, distruttivo) contro
 # "git branch -d" (delete-if-merged, sicuro, uso quotidiano): un match

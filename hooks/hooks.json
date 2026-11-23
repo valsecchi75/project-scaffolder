@@ -17,7 +17,7 @@
     ],
     "UserPromptExpansion": [
       {
-        "matcher": "^project-scaffolder:(3-design|4-build|5-release|task|milestone-plan|milestone-close|fix-bug|improve)$",
+        "matcher": "^project-scaffolder:(2-foundation|3-design|4-build|5-release|task|milestone-plan|milestone-close|fix-bug|improve)$",
         "hooks": [
           { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/command-gate.sh\"", "timeout": 10 }
         ]

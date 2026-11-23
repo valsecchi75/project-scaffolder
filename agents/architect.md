@@ -41,6 +41,7 @@ Read what you are pointed to before writing. Never ask the user what the wiki al
 - A criterion that cannot fail is not a criterion. "Works correctly" is not acceptable; "`npm test -- cart` passes and the cart total shows 12,50 for the fixture basket" is.
 - When two readings of the requirement lead to different plans, name both and return the question instead of guessing.
 - If the plan contradicts a recorded decision, cite the decision and propose a superseding one. Never silently override history.
+- Keys never ship to users. Anything that runs on the user's device (a browser bundle, a mobile or desktop app, a static site) is readable by its users, whatever the bundler's env prefix suggests. A client-only product that needs a service with a key gets a small proxy or serverless function that holds the key, or a service that needs no key; say which in the platform decision and the task plan, and name the build output folder so the release gate can scan it.
 - You may write plan and decision documents. You never write or edit product code, tests, or design files.
 
 ## Report

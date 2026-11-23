@@ -2,7 +2,7 @@
 
 > last-verified: 2026-11-23
 
-**Last changelog version reviewed: 2.1.330** (entries 2.1.321 to 2.1.330 read on 2026-11-23). Installed version at that check: 2.1.329.
+**Last changelog version reviewed: 2.1.330** (entries 2.1.321 to 2.1.330 read on 2026-11-23; checked again at the start of the v4.1.1 session, same day: no newer entry). Installed version at that check: 2.1.329.
 
 Source: https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md. At the start of each session, read only the entries after the version above, then update this page (see `CLAUDE.md`).
 
@@ -21,6 +21,7 @@ Impact: `adopt` (use it now) · `adapt` (change the plugin) · `watch` (may matt
 | 2.1.325 | `.claude/skills` in `--plugin-dir` plugins no longer load from a session started higher up | no impact | The plugin ships skills under `skills/` |
 | 2.1.325 | `pluginDigests` deprecated | no impact | |
 | 2.1.323 | `engines["claude-code"]` in plugin.json | adopt | Set to `>=2.1.323` |
+| 2.1.323+ | Code Mode (experimental, `CLAUDE_CODE_EXPERIMENTAL_CODE_MODE`): Claude writes JavaScript that calls its tools; PreToolUse hooks still judge each call, and an erroring hook refuses only with `onFailure: "block"` | adopt | v4.1.1: `/setup-check` recommends it in terminal sessions (user settings only, not in the VS Code panel); composed-command cases in `tests/test-hooks.sh` |
 | 2.1.323 | The plugin `agent` setting warns (deprecated) | no impact | Not used |
 | 2.1.323 | Hook `decision: "block"` applies in more cases | no impact | Hooks use `permissionDecision` |
 | 2.1.321 | Fable 5.2 (`claude-fable-5-2`), default model | adopt | Planning and verification agents use `fable` |

@@ -20,7 +20,7 @@ Stages run in order, cheapest first. The first red stage stops the gate. The gat
 | 4 | Dependencies | {audit command} | No known high or critical vulnerability without a recorded decision |
 | 5 | Debug pass | `docs/release/v<version>.md` | No open CRITICAL or HIGH finding from the release bug hunt |
 | 6 | Design conformance | `wiki/design/registry.md` | Every released section is approved; built screens match their artboards (interface projects) |
-| 7 | Secrets | `git ls-files secrets` · secrets guard | Nothing under `secrets/` tracked; no key value in the repository |
+| 7 | Secrets | `git ls-files secrets` · secrets guard · build output scan (`/5-release` runs the release skill's `build-secrets.sh` on {build output folder from wiki/tech-stack.md}) | Nothing under `secrets/` tracked; no key value in the repository; no key value in what ships |
 | 8 | Simplicity | diff since last release | No scope creep, speculative options, dead code or abstractions with a single use |
 | 9 | Manual checklist | {store listing, legal pages, analytics, backups…} | Confirmed by the user |
 

@@ -29,6 +29,8 @@ First AskUserQuestion call, four questions:
 | Scope | What may change? | Whole project · Application code · Docs and wiki · Agent setup (CLAUDE.md, .claude/, wiki) |
 | Approval | When do I stop for you? | Every 5 · Every 10 · Only at the end |
 
+The Approval options say in their descriptions that iteration 5 is always a checkpoint, whatever the choice (the cost check below): `Every 5` "at 5, 10, 15 …", `Every 10` "at 5, then 15, 25 …", `Only at the end` "once at 5 to check the cost, then not until the end".
+
 Map Focus to dimensions (`security`, `performance`, `tokens`, `accessibility`, `design`, `features`) and Scope to path prefixes (`[]` for the whole project; application code from `wiki/architecture.md`). Always out of scope, whatever the answer: `raw/`, `docs/brief/`, `.scaffolder/`, `logs/`, `wiki/log.md`, `wiki/product/decisions.md`, any `secrets/` folder and any `.env`, `.env.*` or `.envrc` file at any depth (`.env.example` stays editable), and the loop's own permissions: `.claude/settings.json`, `.claude/settings.local.json`, `.claude/hooks/`, `.mcp.json`. A change there is a decision for the user, not an iteration.
 
 Then show the estimate and the caps in chat, before the second question:

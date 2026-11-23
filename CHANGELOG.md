@@ -5,6 +5,29 @@ All notable changes to the Project Scaffolder plugin are documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 4.1.1 — 2026-11-23
+
+The open points of the Fable 5.2 review of 4.1.0 (`wiki/todo.md` T-001 to T-007). Existing projects need nothing: the new gates read files they already have.
+
+### Added
+- **Release gate scans what ships for keys**: stage 7 of the release gate runs `build-secrets.sh` on the build output and lists every file that holds a value from `secrets/`, by file and variable name, never the value. It recognises secrets exactly as the secrets guard does (the shared `hooks/secrets-lib.sh`). A hit is a critical finding; a scan that cannot read `secrets/` or finds nothing built says so instead of passing.
+- **The architect keeps keys off users' devices**: a client-only product that needs a keyed service gets a small proxy or a keyless service, decided with the platform; `wiki/tech-stack.md` records the build output folder the gate scans.
+- **`/setup-check` recommends Code Mode** for terminal sessions (`CLAUDE_CODE_EXPERIMENTAL_CODE_MODE=1` in the `env` of your user settings; a project setting does not turn it on, and the VS Code panel does not run it), with a new `TIP` status for optional advice.
+
+### Changed
+- **The command gate checks the facts, not only the phase**: a typed `/2-foundation` is refused until the brief says `status: approved` (`--upgrade` still passes), and `/4-build` until the design phase is closed, unless the brief says the product has no interface. The gate reads them through the same script as `/phase-status` (`phase-status.sh --facts`), so the two never disagree.
+- **Loops sized to the project**: `/5-release` recommends 1 verification round instead of 5 for a small project (about 30 source files and 3,000 lines, counted in the release inventory), except a first release with authentication, payments or personal data. `/improve` says in its approval options that iteration 5 is always a checkpoint, also with "Only at the end".
+- **Blocking Claude's reads of `secrets/` is now the recommended answer** in `/2-foundation`: keys load in the shell inside the command that needs them (`set -a; . secrets/<file>.env; set +a; <command>`), so values never reach the transcript. "Readable" stays available.
+- **Lighter phase commands**: each loads at most about 4.5k tokens again (4.1.0: 3.5–5.8k). The dispatch and question rules live only in `phase-flow`; steps that run once per project moved to files read when they apply (the platform decision and the `verify` skill in `cortex/platform.md`, artboard home, browser check and references in `design-studio/entry.md`, the Fable-quota fallback in `phase-flow/fallback.md`). `/task`, `/milestone-plan` and `/milestone-close` load `phase-flow` when the session does not have it yet.
+- **auto-format** finds the project from the hook input's working directory like the other hooks, and formats only files inside it.
+- `tests/test-hooks.sh` grows from 188 to 217 cases: the fact gates, chained, piped, subshell and PowerShell commands against the guards (as Code Mode scripts send them), the build scan, auto-format's project lookup.
+
+### Removed
+- `hooks/deny-dangerous.ps1`: never wired (the plugin's hooks run in bash), it would have kept a second copy of the patterns.
+
+### Fixed
+- The README said phase 1 may write the notebook; since DEC-021 it writes only the brief and `raw/`.
+
 ## 4.1.0 — 2026-11-23
 
 Projects started with 4.0 keep working: `/4-build` writes the new `verify` skill when it is missing. Path-scoped rules, the code map and the shared `.claude/settings.json` are written by `/2-foundation` in new projects; copy them from `skills/foundation/templates/` into an existing one if you want them.

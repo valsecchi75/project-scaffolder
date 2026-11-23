@@ -9,9 +9,10 @@ A workflow cannot ask the user anything mid-run, so every choice is made here, i
 - header `Rounds`; question: "How many verification rounds before v<version>? They run as the release-rounds workflow. Each round: 5 hunters on Fable plus Sonnet re-checks. It stops early after two rounds in a row with nothing new confirmed."
 - options, each with its estimate in the description:
   - `1 round`: about 1M tokens. A single pass, no early stop.
-  - `5 rounds (Recommended)`: at most about 5M tokens; most projects stop dry after 2 or 3.
+  - `5 rounds`: at most about 5M tokens; most projects stop dry after 2 or 3.
   - `10 rounds`: at most about 10M tokens.
   - `100 rounds`: a ceiling of about 100M tokens. Say plainly that this can use up the weekly allowance on a subscription.
+- **The recommendation follows the project's size**, from the inventory's count (step 1): a small project, at most about 30 source files and 3,000 lines, gets `1 round (Recommended)`; five hunters read all of it in one pass, and a second round mostly re-reads the same code. Larger projects get `5 rounds (Recommended)`. Say the count and the reason in the question ("18 files, 1,800 lines: one round reads all of it"). A first release with authentication, payments or personal data keeps `5 rounds` whatever its size.
 
 The estimate is an order of magnitude (5 Fable hunters at 100-200k tokens each, up to 12 Sonnet re-checks at 20-40k). The `/workflows` view shows the real usage per agent: after the first run, write the observed total in the journal and quote it, not the estimate, before any relaunch. Drop the accessibility lens when the project has no user interface (`wiki/tech-stack.md`). Choosing an option is the user's opt-in to running the workflow. When the journal already exists (a resumed release), its cap and lenses hold: do not ask again.
 

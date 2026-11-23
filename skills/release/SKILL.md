@@ -1,6 +1,7 @@
 ---
 name: release
 description: Use when /5-release runs, or when the user wants to ship, publish, tag or prepare a version of a phase-managed project.
+allowed-tools: Bash(bash "${CLAUDE_SKILL_DIR}/scripts/build-secrets.sh" *)
 ---
 
 # Release — phase 5
@@ -16,7 +17,7 @@ Before a version leaves, the strongest available model hunts across the whole pr
 
 ## Step 1 — Inventory
 
-From the last tag (or the first commit): commits, changed files, milestones and design sections included, new dependencies, migrations, new environment variables (names only). Record them in the report.
+From the last tag (or the first commit): commits, changed files, milestones and design sections included, new dependencies, migrations, new environment variables (names only). Also the size of the shipped code: tracked source files and their lines (`git ls-files`, leaving out `docs/`, `wiki/`, `raw/`, `logs/`, `design/`, lockfiles and generated files). Record them in the report; step 3 sizes the rounds from that count.
 
 ## Step 2 — Mass run
 
@@ -39,6 +40,8 @@ CRITICAL and HIGH findings were fixed inside the rounds, through `/task --releas
 ## Step 5 — Release gate
 
 Run the project's `<prefix>-release-gate` skill. It reads this report for its debug-pass stage and the design registry for its design-conformance stage. A red stage stops the release: fix through the loop above and rerun the gate.
+
+Its Secrets stage includes the scan of what ships, after the build of step 2: run `bash "${CLAUDE_SKILL_DIR}/scripts/build-secrets.sh" <build output>` from the project root, with the build output folders from `wiki/tech-stack.md` (no build step: the folders that ship). It looks for every value in `secrets/` the way the secrets guard does and prints only file paths and variable names, never a value; show its lines as they are. A `leak:` line is a CRITICAL finding: a key in a bundle is readable by every user. Fix it through `/task --release-fix` (the key moves behind a proxy or server, as the architect's rule says), tell the user to rotate the key, rebuild and rerun the scan. Exit 2 (no Git Bash, nothing built, or `secrets/` unreadable in a sandbox): the scan did not run, and the stage stays red until it does; the user can run the same command in their own terminal, since it prints no value.
 
 ## Step 6 — Approval and versioning
 

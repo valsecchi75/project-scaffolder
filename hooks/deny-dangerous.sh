@@ -20,8 +20,7 @@ CS_PATTERNS="$SCRIPT_DIR/dangerous-patterns-case-sensitive.txt"
 HIT=""
 
 # Match against the raw JSON: the command string is embedded in it.
-# -i: case-insensitive, to stay symmetric with the .ps1 variant (-match is
-# case-insensitive by default in PowerShell).
+# -i: case-insensitive, so "RM -RF" or "Git Push --Force" still match
 if [ -f "$PATTERNS" ] && printf '%s' "$INPUT" | grep -qiE -f <(grep -v '^#' "$PATTERNS"); then
   HIT=1
 fi

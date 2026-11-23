@@ -1,8 +1,8 @@
 {
   "name": "project-scaffolder",
   "displayName": "Project Scaffolder",
-  "version": "4.0.0",
-  "description": "A strictly sequential, multi-agent way to build a product with Claude Code: questions-only brainstorm, a Karpathy-style second brain with project skills, agents and a never-published secrets folder, design-system-first artboards with anti-slop and accessibility critique saved as Artifact pages, a build pipeline with a bug hunt after every task, and a whole-project debug before every release. Model routing is binding: Fable plans and verifies, Opus builds, Sonnet re-checks and mass-tests.",
+  "version": "4.1.0",
+  "description": "A strictly sequential, multi-agent way to build a product with Claude Code: questions-only brainstorm, a Karpathy-style second brain with project skills, agents and a never-published secrets folder, design-system-first artboards with anti-slop and measured accessibility critique saved as Artifact pages, a build pipeline with a bug hunt after every task, and 1 to 100 verification rounds before every release. Improvement and research loops run as plugin workflows. Model routing is binding: Fable plans and verifies, Opus builds, Sonnet re-checks and mass-tests.",
   "author": {
     "name": "Agent1",
     "url": "https://agent1.it"

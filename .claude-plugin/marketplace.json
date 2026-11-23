@@ -9,8 +9,7 @@
   "plugins": [
     {
       "name": "project-scaffolder",
-      "description": "Five sequential phases with hard gates (brainstorm, foundation, design, build, release), eight specialist agents with fixed models, a second-brain wiki, a secrets folder that never leaves the machine, design-system-first artboards with anti-slop and accessibility critique, and a bug hunt after every task.",
-      "version": "4.0.0",
+      "description": "Five sequential phases with hard gates (brainstorm, foundation, design, build, release), eight specialist agents with fixed models, a second-brain wiki, a secrets folder that never leaves the machine, design-system-first artboards with anti-slop and accessibility critique, a bug hunt after every task, and release, improvement and research loops.",
       "source": "./",
       "author": {
         "name": "Agent1",

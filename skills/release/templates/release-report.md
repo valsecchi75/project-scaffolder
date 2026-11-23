@@ -18,10 +18,11 @@
 
 Sweep: {hits or "clean"}
 
-## Whole-project debug (bug-hunter, {model})
+## Verification rounds (bug-hunter {model}, re-checks sweeper)
 
-| Area | Hunter | Findings | Confirmed |
-|---|---|---|---|
+- **Rounds:** {run}/{cap chosen by the user} — ended {dry | cap | stopped: reason} — journal `docs/release/v{version}-rounds.md`
+- **Lenses:** {security, reliability, accessibility, performance, regression}
+- **Usage:** {observed tokens from /workflows, or "fallback without workflows"}
 
 ### Confirmed findings
 

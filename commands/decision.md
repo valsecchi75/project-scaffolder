@@ -1,7 +1,6 @@
 ---
-description: Record a product or technical decision with its alternatives and reasons as a new DEC-NNN, superseding an older one when needed. Never rewrites history.
+description: Record a decision as a new DEC-NNN with options and reasons, superseding an older one without rewriting it.
 argument-hint: "<short title>"
-model: fable
 ---
 
 Record a decision in `wiki/product/decisions.md` for: $ARGUMENTS

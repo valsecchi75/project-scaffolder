@@ -5,6 +5,55 @@ All notable changes to the Project Scaffolder plugin are documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 4.1.0 — 2026-11-23
+
+Projects started with 4.0 keep working: `/4-build` writes the new `verify` skill when it is missing. Path-scoped rules, the code map and the shared `.claude/settings.json` are written by `/2-foundation` in new projects; copy them from `skills/foundation/templates/` into an existing one if you want them.
+
+### Added
+- **Release verification rounds** (`/5-release`, step 3): after a green build and test run you choose 1, 5, 10 or 100 rounds, with a cost estimate. Each round runs five Fable hunters (security, reliability, accessibility, performance, regression) and a Sonnet agent that tries to refute every new finding; it stops after two dry rounds, or to fix a confirmed critical or high finding. A journal (`docs/release/v<version>-rounds.md`) lets a new session resume.
+- **Improvement loop** (`/improve`, phase 4 between milestones): 10 to 100 iterations, each one change of at most 150 lines built in its own git worktree and then attacked by a verifier. Checkpoints for your approval, a pre-launch permissions step so the agents do not stall, protected paths (secrets, `.env`, settings, hooks), and nothing reaches your checkout until you approve the final diff. Journal in `logs/improve/<run>/journal.md`.
+- **Research** (`/research <topic>`, also offered once in the brainstorm and the design phase): 1, 3 or 5 rounds on GitHub, Reddit, Hacker News and the web, saved as cited raw sources in `raw/research/<slug>/` with a digest. Sources are untrusted text: the script drops off-domain and malformed URLs, reads each page once, and passes only short signals onward. In the brainstorm the findings come back as questions.
+- The three loops run as plugin workflows (`release-rounds`, `improve-segment`, `research-rounds`) with progress and per-agent tokens in `/workflows`; without workflows each one runs the same steps from the main session, with a lower cap.
+- **Command gate**: a typed `/3-design`, `/4-build`, `/5-release`, `/task`, `/milestone-plan`, `/milestone-close`, `/fix-bug` or `/improve` that comes too early is refused before it loads, with the command to run instead.
+- **Session banner**: every session in a phase-managed project opens with one line shown only to you: phase, next command, and whether the session runs the model the flow is designed for (`/model fable` when it does not).
+- **Compaction snapshot**: before every compaction a hook writes the phase, the plan, the handoff's age and the uncommitted files to `.scaffolder/compact-snapshot.md` and tells the summary what to keep; the session after it reads that file first, and `/session-start` notices a handoff that fell behind.
+- **`/phase-status`** reports facts read by a script (approvals, what blocks the gate, the next command) plus a "You can run now" line per phase.
+- **Brainstorm**: questions through AskUserQuestion, one topic per call; the brief is drafted topic by topic, so an interrupted interview resumes where it stopped; solutions you volunteer are parked verbatim in `raw/parking-lot.md` for the phase that decides them; a hand-over check before approval, then `/clear brainstorm` and `/2-foundation`.
+- **Design**: a self-contained local page per section when the Artifact tool is unavailable; contrast ratios computed by a bundled WCAG calculator, never estimated; an optional reference-research step whose follow and avoid picks reach the designer and the critic; an optional browser check where the critic renders each page (clipped text, computed colors, focus, console errors).
+- **Build**: `/task --parallel <#,#>` builds two or three independent activities at once, each in its own worktree; the platform decision writes a project `verify` skill that Claude Code runs before each commit and the verifier runs on every task, and fills the Commands section of the project's `CLAUDE.md`; a commit per task when the new **Git** line of your working agreements says so; the architect, builder, verifier and bug hunter preload the project's code map instead of exploring the tree.
+- **Generated projects**: a lean `CLAUDE.md` (facts and paths, a Commands section filled at the platform decision, Compact instructions), path-scoped rules in `.claude/rules/`, a `project-overview` code-map skill, a shared `.claude/settings.json` that enables the plugin for collaborators, an opt-in rule that blocks reads of `secrets/`, and keys loaded in the shell so values never enter the conversation.
+- **Wiki and logs**: `/wiki-lint` starts from a token report against page budgets and finds broken links and `@` imports; the pipeline log is one parsable line per step, and `/pipeline-stats` counts it with a script instead of reading it.
+- **`/setup-check`** detects Git Bash, hooks turned off, workflows off, a missing `fallbackModel`, why the Artifact tool is unavailable and auto memory off, each with the exact fix and what degrades.
+- **`/todo` — the project notebook** (`wiki/todo.md`, skill `backlog`): advice from users and testers, loose ideas, bug hunts and checks asked for and never run, deferred findings, debt and open questions, one `T-NNN` line each with priority, type, date and source. Claude adds to it when something is left for later; a read-only script shows it P1 first and oldest first and flags old P1 items; `/milestone-plan` starts from it and `/milestone-close` reconciles it; the session brief shows the open count. Created by `/2-foundation` from the brief's open questions; phase 1 still writes only the brief and `raw/`.
+- **Secrets never leave the machine through any tool**: the secrets guard now also covers MCP servers (GitHub, mail, docs, chat, hosting), web fetch and search, messages to other or cloud sessions, and every file an Artifact publish carries (supporting files, assets, database rows), by value and by `secrets/` path. The checks run in batches, so a publish that names many files stays well inside the hook's timeout (a timeout refuses the call).
+- **Fable out of quota**: a Fable agent that fails on a usage limit is offered again on Opus now or after the reset; a step run on Opus is added to `/todo` to be repeated on Fable.
+- **Plugin evals** (`evals/`, `claude plugin eval`): three cases that push against a gate in a real session: the brainstorm creates no code and asks instead; `/task` refuses without an approved milestone plan; a value from `secrets/` never reaches another file.
+- `tests/test-hooks.sh` grows from 57 to 172 cases and now also covers the bundled scripts.
+
+### Changed
+- **Commands no longer switch the model** (a switch re-reads the whole conversation without the prompt cache). Routing holds through the agents' own models; the read-only reports (`/phase-status`, `/pipeline-stats`, `/skill-map`, `/setup-check`) run in a forked Sonnet subagent.
+- **User-only commands**: the phase commands, `/milestone-plan`, `/milestone-close`, `/improve`, `/research`, `/session-start`, `/session-end`, `/wiki-ingest`, `/wiki-lint`, `/skill-map` and `/pipeline-stats` are typed by you; Claude names them as the next step but does not start them, and their descriptions no longer fill the context.
+- **Agents** are dispatched by scoped name, chained on their completion notifications, and return short fixed-shape reports; every agent sets its own effort, and the builder's scales with the task size; `persona-tester` starts without the project's `CLAUDE.md`, like a real user.
+- **Every bug hunt refutes before it confirms**: after a task, in `/bug-hunt` and in the release rounds, critical and high findings go to a Sonnet agent that tries to prove them wrong. Uncertain counts as refuted; a check that could not run never counts as confirmed.
+- **The guards fail closed**: if the phase, secrets or destructive-command guard cannot run (no bash, a broken install), the tool call is refused instead of passing unchecked. `/setup-check` gives the fix.
+- **Hooks follow the session into worktrees and subfolders**: the project is found from the hook input's working directory, so a worktree cannot bypass the phase guard.
+- **`/5-release`** resumes an interrupted release, runs the rounds only on a green build, and offers `/code-review` and `/security-review`, which Claude starts after you agree.
+- **Sessions**: `/session-start [focus]` and `/session-end` each run one read-only script; the handoff is the whole continuation, so a new chat needs only `/session-start <focus>`; plain `/compact` is enough because the hook supplies the keep-list.
+- **Synapse** reports skills due for a refactor instead of rewriting them on its own, and reuses the error id already recorded.
+- The skill behind `/bug-hunt` and `/fix-bug` is now `debugging` (the commands are unchanged): it had the same name as the `/bug-hunt` command.
+- The destructive-command prompt is now in English, like the other guard messages.
+- The version is set only in `plugin.json`; the marketplace entry no longer repeats it (with both set, `plugin.json` wins and `claude plugin validate` warns).
+
+### Fixed
+- `/phase-status` in phase 5 could take the rounds journal for the release report, and showed a draft brief's interface as `{yes|no}`.
+- After a release the session banner and the compaction snapshot pointed to `/4-build`, while the release sets the phase back to build and suggests `/milestone-plan`; all now say `/milestone-plan`.
+- Research no longer offers `/deep-research` as the fallback when workflows are off: it is a workflow too.
+- Solutions parked in phase 1 were never read again: the design phase and the platform decision now weigh their lines of `raw/parking-lot.md` and say what they adopt or reject.
+- Phase 2 read every file under `raw/`, research sources included; it now reads only the research digests, like the brainstorm.
+- A loop agent that fails no longer ends the whole run: in `/improve` it discards one iteration instead of the segment, in research a failed critic still leaves the digest, and neither failure counts as "nothing left to do". A launch whose script fails its syntax check is reported instead of being taken as started.
+- The workflow opt-in rule in the generated `CLAUDE.md` and the build skill now covers the plugin's own loops, which start on your answer to their cost question.
+- Shell scripts under `skills/` are kept LF-only by `.gitattributes`; a CRLF checkout on Windows would have broken them.
+
 ## 4.0.0 — 2026-11-23 — Sequential Edition
 
 Breaking: the v3 commands are replaced. v3 projects migrate with `/2-foundation --upgrade`.

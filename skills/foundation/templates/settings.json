@@ -1,0 +1,10 @@
+{
+  "extraKnownMarketplaces": {
+    "project-scaffolder-marketplace": {
+      "source": { "source": "github", "repo": "valsecchi75/project-scaffolder" }
+    }
+  },
+  "enabledPlugins": {
+    "project-scaffolder@project-scaffolder-marketplace": true
+  }
+}

@@ -1,5 +1,5 @@
 ---
-name: bug-hunt
+name: debugging
 description: Use when /bug-hunt or /fix-bug runs, when the user reports a bug or a failing behaviour, or when the user asks to look for bugs in a diff, a module or a flow of a phase-managed project.
 ---
 
@@ -17,10 +17,11 @@ The end-of-task bug hunt inside `/task` and the whole-project hunt inside `/5-re
 Scope: `--diff <range>` (default: the uncommitted changes, else the last commit), `--area <path or flow>`, or `--all`.
 
 1. **Partition.** For `--all`, split the project into at most four areas along real boundaries (a module, a flow, an integration, the data layer), using `wiki/architecture.md`. List the classes already ruled out by earlier hunts from `logs/pipeline/` so they are not repeated.
-2. **Hunt.** Dispatch one `project-scaffolder:bug-hunter` per area; several areas can run in parallel in one message. Each gets its area, the changes since the last release, the ruled-out classes and `wiki/debugging/known-errors.md`.
-3. **Second opinion.** Send every CRITICAL and HIGH finding to `project-scaffolder:sweeper`, which follows the reproductions without the hunter's conclusions.
-4. **Merge.** Deduplicate findings that share a root cause. Mark each one `confirmed` (reproduced twice, or a failing test), `unconfirmed` (the sweeper could not reproduce) or `lead`.
-5. **Report** in chat: a table of confirmed findings by severity, the count of unconfirmed findings and leads, and the next step: `/fix-bug` for a single finding, `/task` for a group of related findings. Write the full report to `logs/pipeline/<today>.md`.
+2. **Hunt.** Dispatch one `project-scaffolder:bug-hunter` per area, all in one message. They start in the background: treat each launch as started and wait for every completion notification before step 3.
+   Each gets its area, the changes since the last release, the ruled-out classes and `wiki/debugging/known-errors.md`.
+3. **Refute.** Deduplicate first (same root cause, same `path:line`), then send every CRITICAL and HIGH finding, in one launch, to `project-scaffolder:sweeper` with the **refutation** job: it re-derives each one with its own commands and tries to prove it wrong, the same rule as the release rounds.
+4. **Mark** each finding `confirmed` (the sweeper ran the check and could not refute it), `refuted`, `unverified` (the check could not run, or MEDIUM and LOW findings that were not sent) or `lead`. Uncertain counts as refuted; not run never counts as confirmed.
+5. **Report** in chat: a table of confirmed findings by severity, the counts of refuted and unverified findings and leads, and the next step: `/fix-bug` for a single finding, `/task` for a group of related findings. Write every finding with its status and reproduction, plus one pipeline-logger line per agent, to `logs/pipeline/<today>.md`. Do not repeat the agents' reports in chat.
 
 `/bug-hunt` never edits product code.
 

@@ -1,0 +1,63 @@
+<!doctype html>
+<!--
+  Local artboard page (design-studio, Local mode). One file per deliverable:
+  design/<slug>/index.html. Self-contained: no <link>, no external <script>,
+  no remote fonts or images (inline SVG or data: URIs only), so it opens from
+  disk in any browser and the critic can read every value in one file.
+  Replace each {placeholder} and keep the structure. Product tokens go in :root; --canvas-* style only the board around
+  the frames and never appear inside a frame.
+-->
+<html lang="{en}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{Project} — {Section} artboards</title>
+<style>
+  :root {
+    /* Product tokens, copied verbatim from design/system/ (same names, same values). */
+    --color-text: {#1A1C1F};
+    --color-surface: {#FFFFFF};
+    --color-accent: {#2357D9};
+    --color-focus: {#2357D9};
+    --font-body: {system-ui, -apple-system, "Segoe UI", sans-serif};
+    --space-1: {4px};
+    --radius-1: {6px};
+    /* …every token the frames use… */
+
+    --canvas-bg: #E9EAEC;
+    --canvas-label: #3B3F45;
+  }
+  body { margin: 0; padding: 32px 16px; background: var(--canvas-bg); font: 13px/1.4 system-ui, sans-serif; color: var(--canvas-label); }
+  .board-head { margin: 0 0 24px; }
+  .board-head h1 { margin: 0 0 4px; font-size: 18px; }
+  .board { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; }
+  .frame { flex: none; }
+  .frame > figcaption { margin: 0 0 8px; font-weight: 600; }
+  .frame > .screen { overflow: hidden; background: var(--color-surface); color: var(--color-text); font-family: var(--font-body); box-shadow: 0 0 0 1px rgba(0,0,0,.12); }
+</style>
+</head>
+<body>
+<header class="board-head">
+  <h1>{Project} — {Section}</h1>
+  <p>Design system: {name, version or date} · Round {n} · Frames: {default, empty, loading, error, …} × {390, 1440}px</p>
+</header>
+
+<main class="board">
+  <!-- One <figure> per state × viewport. Label = section / state / viewport.
+       width and height are the target viewport; content inside uses tokens only. -->
+  <figure class="frame" id="{section}-default-390">
+    <figcaption>{Section} / default / 390px</figcaption>
+    <div class="screen" style="width:390px;height:844px">
+      <!-- frame content -->
+    </div>
+  </figure>
+
+  <figure class="frame" id="{section}-default-1440">
+    <figcaption>{Section} / default / 1440px</figcaption>
+    <div class="screen" style="width:1440px;height:900px">
+      <!-- frame content -->
+    </div>
+  </figure>
+</main>
+</body>
+</html>

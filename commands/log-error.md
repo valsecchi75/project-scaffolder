@@ -1,7 +1,6 @@
 ---
-description: Record a bug or mistake that is already understood - KE-NNN in known-errors, ERR-NNN in guardrails, and propagate the lesson to the connected project skills. Use /fix-bug when the cause is not known yet.
+description: Record an understood error as KE-NNN and ERR-NNN and propagate the lesson to project skills. Unknown cause - use /fix-bug.
 argument-hint: "<short title>"
-model: fable
 ---
 
 Record this error: $ARGUMENTS

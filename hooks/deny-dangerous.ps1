@@ -28,6 +28,6 @@ if (-not $hit -and (Test-Path $csPatternsFile)) {
 }
 
 if ($hit) {
-  '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"Guardrail project-scaffolder: comando potenzialmente distruttivo. Approva solo se intenzionale."}}'
+  '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"project-scaffolder guard: possibly destructive command (recursive delete, reset, clean, force push, DROP). Approve only if you meant it."}}'
 }
 exit 0

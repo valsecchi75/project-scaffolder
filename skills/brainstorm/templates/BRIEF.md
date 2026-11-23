@@ -81,6 +81,7 @@ sources: [raw/brief-original.md]
 - **Generative models:** {image → …, video → …, voice → … | n/a}
 - **Reference projects:** {path → what to reuse | none}
 - **External services needing keys:** {service names, no values | none}
+- **Git:** {commit after every task: yes | no, I commit}
 - **Other rules:** {…| none}
 
 ## Assumptions
@@ -91,3 +92,7 @@ sources: [raw/brief-original.md]
 ## Open questions
 
 - {anything the user chose to leave for later, with the phase where it must be settled}
+
+## Parked ideas
+
+{none | N solutions the user volunteered (phase 3: n, phase 4: n), verbatim in raw/parking-lot.md; none adopted, each weighed by the phase that decides it}

@@ -23,7 +23,7 @@ The orchestrating session plans and decides; specialists do the work. Every spec
 | `project-scaffolder:verifier` | Fable | no | 4, 5 | Checks a task against its plan with fresh evidence |
 | `project-scaffolder:bug-hunter` | Fable | no | 4, 5 | Proves defects: diff at the end of each task, whole project before release |
 | `project-scaffolder:design-critic` | Fable | no | 3 | Slop audit, contrast and type accessibility, system fidelity |
-| `project-scaffolder:sweeper` | Sonnet | no | 4, 5 | Full suites, second opinions on findings, project-wide sweeps |
+| `project-scaffolder:sweeper` | Sonnet | no | 4, 5 | Full suites, refutation of findings, project-wide sweeps |
 | `project-scaffolder:persona-tester` | Sonnet | no | 4 | Walks a changed flow as one end user |
 
 ## Rules of delegation

@@ -1,7 +1,7 @@
 ---
-description: Add a source (file, folder or link) to the project's second brain - store it in raw/, discuss the takeaways, update every wiki page it touches, index and log it.
+description: Ingest a file, folder or link into the wiki - raw/ copy, takeaways, page updates, index and log.
 argument-hint: "<file, folder or URL>"
-model: fable
+disable-model-invocation: true
 ---
 
 Load the `project-scaffolder:wiki-keeper` skill and run **Ingest** on: $ARGUMENTS

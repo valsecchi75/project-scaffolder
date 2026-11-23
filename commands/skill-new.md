@@ -1,7 +1,6 @@
 ---
-description: Create a new project skill for a domain or a stack in .claude/skills/, connected in the skills map. Used after the platform decision and whenever a task finds no skill for its area.
+description: Create a project skill in .claude/skills/ for a domain or stack no skill covers yet, linked in the skills map.
 argument-hint: "<domain or stack, e.g. payments or nextjs-patterns>"
-model: fable
 ---
 
 Create a project skill for: $ARGUMENTS

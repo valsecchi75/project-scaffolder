@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# PreToolUse guard (project-scaffolder v3).
+# PreToolUse guard for destructive shell commands (project-scaffolder v4).
 # Reads the hook event JSON on stdin. If the Bash/PowerShell command matches a
-# dangerous pattern, asks for explicit user confirmation. Always exits 0.
+# dangerous pattern, asks for explicit user confirmation. Exits 0, except when
+# its pattern files are missing (see the fail-closed note below).
 
 INPUT=$(cat)
 
@@ -11,6 +12,10 @@ printf '%s' "$INPUT" | grep -qE '"tool_name"[[:space:]]*:[[:space:]]*"(Bash|Powe
 SCRIPT_DIR=$(dirname "$0")
 PATTERNS="$SCRIPT_DIR/dangerous-patterns.txt"
 CS_PATTERNS="$SCRIPT_DIR/dangerous-patterns-case-sensitive.txt"
+
+# Fail closed: hooks.json sets onFailure "block", so a guard that lost its
+# rules exits 1 and the shell call is refused instead of passing unchecked.
+[ -f "$PATTERNS" ] && [ -f "$CS_PATTERNS" ] || exit 1
 
 HIT=""
 
@@ -31,7 +36,7 @@ fi
 
 if [ -n "$HIT" ]; then
   cat <<'EOF'
-{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"Guardrail project-scaffolder: comando potenzialmente distruttivo (cancellazione ricorsiva, reset/clean/force-push, DROP). Approva solo se intenzionale."}}
+{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"project-scaffolder guard: possibly destructive command (recursive delete, reset, clean, force push, DROP). Approve only if you meant it."}}
 EOF
 fi
 exit 0

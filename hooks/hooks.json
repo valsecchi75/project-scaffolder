@@ -8,23 +8,38 @@
         ]
       }
     ],
+    "PreCompact": [
+      {
+        "hooks": [
+          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/pre-compact.sh\"", "timeout": 10 }
+        ]
+      }
+    ],
+    "UserPromptExpansion": [
+      {
+        "matcher": "^project-scaffolder:(3-design|4-build|5-release|task|milestone-plan|milestone-close|fix-bug|improve)$",
+        "hooks": [
+          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/command-gate.sh\"", "timeout": 10 }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash|PowerShell",
         "hooks": [
-          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/deny-dangerous.sh\"", "timeout": 10 }
+          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/deny-dangerous.sh\"", "timeout": 10, "onFailure": "block" }
         ]
       },
       {
         "matcher": "Write|Edit|NotebookEdit",
         "hooks": [
-          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/phase-guard.sh\"", "timeout": 10 }
+          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/phase-guard.sh\"", "timeout": 10, "onFailure": "block" }
         ]
       },
       {
-        "matcher": "Bash|PowerShell|Write|Edit|NotebookEdit|Artifact",
+        "matcher": "^(Bash|PowerShell|Write|Edit|NotebookEdit|Artifact.*|WebFetch|WebSearch|SendMessage|SendToProject.*|RemoteTrigger|PushNotification|mcp__.*)$",
         "hooks": [
-          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/secrets-guard.sh\"", "timeout": 15 }
+          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/secrets-guard.sh\"", "timeout": 15, "onFailure": "block" }
         ]
       }
     ],

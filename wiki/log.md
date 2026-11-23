@@ -19,3 +19,18 @@ Phase flow, binding model routing, numbered commands, secrets folder, design dep
 
 ## [2026-11-23] release | v4.0.0 (prepared)
 Phases, agents, guards, design studio, bug hunt, release debug, second-brain wiki. Branch `v4-sequential-flow`; not pushed.
+
+## [2026-11-23] decision | DEC-009 to DEC-012
+Improvement loop on branch `v4-improve-50` (baseline tag `v4.0.0-baseline`): no model pins on main-conversation commands, loops as plugin workflows with a fallback, user-facing status from hooks, behaviour evals for the gates. DEC-002 marked partly superseded; `claude-code-changelog.md` capabilities and candidates brought up to date.
+
+## [2026-11-23] release-prep | Unreleased changelog and version source
+`CHANGELOG.md` "Unreleased" now covers the whole improvement branch (workflows, command gate, PreCompact, banner, read-only scripts, generated-project rules, local artboards, parallel build, agent and hook changes). Version removed from the marketplace entry: it lives only in `plugin.json`.
+
+## [2026-11-23] integrate | 60 improvement cycles merged
+Cross-area fixes: the bug-hunt skill renamed `debugging` and the workflows `improve-segment` and `research-rounds` (one name per component); `/improve` added to the command gate; every bug hunt refutes (cortex aligned, sweeper second-opinion job removed); release hooks and `/phase-status` agree on `/milestone-plan` after a release; the rounds journal no longer read as a release report; `/code-review` and `/security-review` started by Claude after the user agrees; all `*.sh` LF through the root `.gitattributes`; tests for the bundled scripts. DEC-013 to DEC-018.
+
+## [2026-11-23] release | v4.1.0 (prepared)
+Loops as workflows, command gate, session banner, PreCompact snapshot, read-only scripts, refute-first verification, fail-closed guards, lean generated projects. Version only in `plugin.json`. Not pushed.
+
+## [2026-11-23] feature | /todo notebook, outward secrets guard, Fable quota fallback
+`/todo` and skill `backlog` (`wiki/todo.md`, read-only `todo-report.sh`), wired into milestone plan and close, bug hunt, persona test, release and session end. Secrets guard extended to MCP, web, session messages and Artifact supporting files. A Fable agent out of quota is offered on Opus, with a `/todo` item to repeat it. DEC-019, DEC-020. Phase 1 stays without wiki writes (regression review): its loose ends go under the brief's Open questions.

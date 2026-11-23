@@ -1,94 +1,79 @@
 ---
 name: pipeline-logger
-description: Use when a /task, /bug-hunt, /fix-bug, /milestone-close or /5-release step completes or fails in a phase-managed project, or when /pipeline-stats needs to read the logs.
+description: Use when a /task, /bug-hunt, /fix-bug, /milestone-close, /test-sweep, /improve or /5-release step completes or fails in a phase-managed project, or when /pipeline-stats reads the logs.
+allowed-tools: Bash(bash "${CLAUDE_SKILL_DIR}/scripts/pipeline-stats.sh" *)
 ---
 
 # Pipeline Logger — the audit trail
 
-Every step that flows through the pipeline is written down: who did it, on which model, with what result. Failures are written twice, so they can be found fast.
+One line per step: who, on which model, in which round, with what result. A script counts the log without reading it into context. Append only: never edit or delete a line.
 
 ```
-logs/
-├── pipeline/YYYY-MM-DD.md          every operation of the day
-└── errors/YYYY-MM-DD-errors.md     failures only, cross-referenced
+logs/pipeline/YYYY-MM-DD.md          every operation of the day
+logs/errors/YYYY-MM-DD-errors.md     failures only, with evidence
 ```
 
-Create the day's files on the first write. One file per day, append only, never deleted.
+Create the day's file on the first write.
 
-## Task block (`logs/pipeline/YYYY-MM-DD.md`)
+## Record format
 
-```markdown
----
+Every operation is one header followed by its step lines:
 
-## [HH:MM] TASK-YYYY-MM-DD-NNN — "{task}"
-
-**Milestone:** M{n} · activity {#} · **Size:** Trivial | Medium | Complex · **Flags:** {…}
-**Execution:** standard | decomposition | workflow (user choice)
-
-### Plan — architect (Fable)
-- Plan: docs/plans/tasks/{task-id}.md · open questions: {n, answered by the user | none}
-- Skills: {project skills used} · Design section: {registry section | —}
-
-### Build — builder (Opus) · round {n}
-- Files: {list} · +{added} / -{removed}
-- Steps verified by the builder: {n}/{n} · deviations: {none | …}
-
-### Verify — verifier (Fable) · round {n}
-- Verdict: PASS | FAIL · criteria met {n}/{n}
-- Findings: {BLOCKER/MAJOR/MINOR counts; one line each on FAIL}
-
-### Bug hunt — bug-hunter (Fable) · second opinion — sweeper (Sonnet)
-- Findings: {CRITICAL/HIGH/MEDIUM/LOW counts} · confirmed {n} · unconfirmed {n} · leads {n}
-- Classes ruled out: {list}
-
-### Persona test — persona-tester (Sonnet)
-- {name, archetype} → COMPLETED | BLOCKED at step {n} | frictions {n}
-- Rework: yes (reason) | no
-
-### Synapse
-- Updated: {skill} ({maturity old → new}) · propagated to: {skills} · guardrail: {ERR-NNN | none}
-
-### Outcome
-- SUCCESS | FAILED | ESCALATED · rounds {n} · evidence: {the VERIFY line}
+```
+## [HH:MM] <OP> <id> | <title>
+- <step> | <agent>/<model> | r<n> | <RESULT> | <detail>; <detail>
 ```
 
-Sections that did not run say why in one line ("skipped: Trivial", "skipped: no interface change").
+- **OP:** `TASK`, `BUG-HUNT`, `FIX-BUG`, `MILESTONE-CLOSE`, `RELEASE`, `DESIGN`, `TEST-SWEEP`, `IMPROVE`, `GATE-SKIPPED`, `MODEL-FALLBACK`.
+- **id:** `TASK-YYYY-MM-DD-NNN`, `KE-NNN`, `M<n>`, the version, the improve run, or `-`.
+- **Fields:** exactly five, split by ` | `. Use `-` for a field that does not apply. RESULT is one uppercase word (`OK`, `PASS`, `FAIL`, `COMPLETED`, `BLOCKED`, `SKIPPED`, `FALLBACK`, `SUCCESS`, `FAILED`, `ESCALATED`). Details are separated by `;`, never by `|`.
+- **Skipped steps** still get their line: RESULT `SKIPPED`, detail the reason (`Trivial`, `no interface change`).
+- **Free text** (a bug-hunt findings table, a test-sweep table) goes only after the step lines of its block. The stats script reads headers and step lines only.
+
+## A task
+
+Steps in order: `meta`, `gate` (only when a gate was skipped), `plan`, `build`, `verify`, `bughunt`, `recheck`, `persona`, `synapse`, `outcome`. Repeat `build` and `verify` once per round.
+
+```
+## [14:05] TASK TASK-2026-11-23-002 | Show the renewal date on the widget
+- meta | - | - | MEDIUM | M2 a3; standard; flags none
+- plan | architect/fable | r1 | OK | docs/plans/tasks/TASK-2026-11-23-002.md; questions 1; skills app-widget, app-domain; design home-widget
+- build | builder/opus | r1 | OK | 3 files +84/-6; steps 5/5; deviations none
+- verify | verifier/fable | r1 | FAIL | criteria 6/7; MAJOR 1: date shown in the device locale
+- build | builder/opus | r2 | OK | 1 file +4/-1; steps 1/1
+- verify | verifier/fable | r2 | PASS | criteria 7/7
+- bughunt | bug-hunter/fable | r1 | OK | C0 H1 M0 L0; confirmed 1; refuted 0; unverified 0; leads 1; ruled out injection, races
+- recheck | sweeper/sonnet | r1 | OK | refutation; not refuted 1/1
+- persona | persona-tester/sonnet | r1 | COMPLETED | Anna (first-time user); frictions 1; rework no
+- synapse | - | - | OK | app-widget seed->growing; propagated app-domain; guardrail ERR-012
+- outcome | - | r2 | SUCCESS | VERIFY: npm test -- widget passes 12/12
+```
+
+`meta` RESULT is the size (`TRIVIAL`, `MEDIUM`, `COMPLEX`); its details are milestone and activity, execution (`standard`, `decomposition`, `workflow`) and flags. `outcome` carries the total rounds and starts its detail with the VERIFY evidence.
 
 ## Other operations
 
-Same file, shorter blocks headed `## [HH:MM] <OP> — <title>`, for: `BUG-HUNT` (scope, areas, findings table), `FIX-BUG` (KE-NNN, cause, test), `MILESTONE-CLOSE` (mass-run results), `RELEASE` (version, gate verdict), `DESIGN` (section, critic verdict, rounds), `GATE-SKIPPED` (which gate, by which flag).
+Same line shape, their own steps: `bughunt` (scope, areas, severity counts, `confirmed n`), `fix` (KE-NNN, cause, test), `mass-test`, `critique`, release `gate`. A skipped gate is `- gate | - | - | SKIPPED | <which gate>; flag <flag>`; a fallback run is `- fallback | <agent>/<model> | - | FALLBACK | <why>; repeat on Fable`.
 
 ## Error entry (`logs/errors/YYYY-MM-DD-errors.md`)
 
-```markdown
----
-
-## [HH:MM] {step} failed — TASK-YYYY-MM-DD-NNN
-
-**Agent:** {name} ({model}) · **Round:** {n} of 3
-**What happened:** {one paragraph}
-**Evidence:**
-    {the failing command and its output, trimmed}
-**Resolution:** fixed in round {n} | escalated to the user | recorded as KE-NNN / ERR-NNN
+```
+## [14:12] ERROR TASK-2026-11-23-002 | verify failed
+- agent | verifier/fable | r1 | FIXED | fixed in r2
+What happened: one or two sentences.
+    <the failing command and its output, trimmed to 20 lines>
 ```
 
-Log an error entry whenever a verifier, bug-hunter confirmation, persona block, synapse validation or gate fails, and whenever a task hits the round limit.
+RESULT is the resolution: `FIXED` (in a later round), `ESCALATED` (to the user) or `RECORDED` (with the KE-NNN / ERR-NNN in the detail). Write one whenever a verifier, bug-hunter confirmation, persona test, synapse validation or gate fails, and when a task hits the round limit of 3.
 
 ## Never log
 
 - File contents or full diffs: file names and line counts are enough.
-- The user's messages verbatim: the task description is enough.
+- The user's messages verbatim: the task title is enough.
 - Secret values, tokens or personal data, even when the error is about them.
 
-## Queries for `/pipeline-stats`
+## `/pipeline-stats`
 
-```bash
-grep -c '^## \[.*\] TASK-' logs/pipeline/*.md                  # tasks per day
-grep -h 'Verdict: FAIL' logs/pipeline/*.md | wc -l              # verifier rejections
-grep -h '^- Findings:' logs/pipeline/*.md                       # bug-hunt yield
-grep -h 'confirmed' logs/pipeline/*.md                          # confirmed vs unconfirmed
-grep -h '^- SUCCESS\|^- FAILED\|^- ESCALATED' logs/pipeline/*.md | sort | uniq -c
-grep -h '^\*\*Agent:\*\*' logs/errors/*.md | sort | uniq -c     # failures by agent
-```
+From the project root run `bash "${CLAUDE_SKILL_DIR}/scripts/pipeline-stats.sh" [--today|--week|--month|--all]` (default `--today`). It is read-only and prints pass rate, rounds, outcomes, bug-hunt yield, persona blocks, skipped gates, fallbacks, top skills, failures by agent, unparsable lines as `file:line`, and `flag:` lines for anomalies. Report those numbers plainly; do not recount them. To name the defect classes that keep coming back, open only the blocks it lists under `bug hunt`.
 
-`/pipeline-stats [--week|--month|--all]` reports: tasks run, first-round pass rate, average rounds, escalations, bug-hunt findings confirmed per task, the classes that keep coming back, persona blocks, and the skills used most. Report bad numbers plainly and flag anomalies (for example "verifier rejects over half the tasks this week: review the plans").
+Older logs written in the earlier multi-section format show up as unparsable lines: report them as "old format", never rewrite them. If the script cannot run, count with `grep -h '^- verify |' logs/pipeline/*.md` and the like, and say so.

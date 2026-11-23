@@ -4,23 +4,33 @@
 # files that belong to a later phase cannot be written.
 #
 #   brainstorm  -> questions only: just the brief, raw sources and phase state
+#                  (no wiki yet, not even wiki/todo.md: phase 2 creates it)
 #   foundation  -> knowledge base and agent setup: no application code
 #   design      -> design files and knowledge base: no application code
 #   build, release -> unrestricted
 #
-# No .scaffolder/phase file means the project is not phase-gated: pass through.
+# The phase that governs a file is the one of the nearest .scaffolder/phase
+# above it, wherever Claude's cwd is (main checkout, worktree, subdirectory).
+# No such file means the path is not phase-gated: pass through.
 # Shell writes are not parsed here; the phase skills forbid them in prose.
+#
+# Fail closed: hooks.json sets onFailure "block", so any exit other than 0
+# (here: lib.sh missing) refuses the call instead of letting it through.
+# Every decision path therefore exits 0 with valid JSON or no output.
 
 INPUT=$(cat)
-. "$(dirname "$0")/lib.sh"
-
-STATE="$PS_PROJECT/.scaffolder/phase"
-[ -f "$STATE" ] || exit 0
-PHASE=$(head -n 1 "$STATE" | tr -cd 'a-z')
+. "$(dirname "$0")/lib.sh" || exit 1
 
 FILE=$(ps_field "$INPUT" file_path)
 [ -z "$FILE" ] && FILE=$(ps_field "$INPUT" notebook_path)
 [ -z "$FILE" ] && exit 0
+case "$(ps_norm "$FILE")" in
+  /*|[a-z]:/*) ROOT=$(ps_root_of "$FILE") ;;
+  *)           ROOT=$(ps_root_of "$PS_PROJECT/$FILE") ;;   # relative: docs say never, stay safe
+esac
+[ -z "$ROOT" ] && exit 0
+PS_PROJECT="$ROOT"
+PHASE=$(head -n 1 "$ROOT/.scaffolder/phase" | tr -cd 'a-z')
 REL=$(ps_rel "$FILE")
 [ -z "$REL" ] && exit 0
 

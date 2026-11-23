@@ -3,197 +3,66 @@ name: synapse
 description: Use when a task, a bug fix or a release in a phase-managed project ends with a lesson worth keeping, or when the user asks to propagate learning or update the project skills.
 ---
 
-# Synapse — The Nervous System
+# Synapse — lessons into the project skills
 
-## Overview
+After a task, a bug fix or a release, Synapse writes what was learned into the project skill that was used, passes a short note to the skills directly connected to it, and keeps `wiki/skills-map.md` current. A mistake found once should not happen again in any skill that could meet it.
 
-Synapse makes skills learn from experience and communicate with each other. After every completed task, it updates the primary skill with new knowledge, propagates relevant insights to connected skills, and maintains the connection map that makes compound learning possible.
+## Hard rules
 
-**Core principle:** Every error found once should never recur — because Synapse propagates it to every skill that could encounter it.
+1. **Back up before editing a skill's sections** (the primary update, a refactor): copy it to `.claude/skills/<name>/.history/SKILL-YYYY-MM-DD-N.md` first. A one-line propagated note needs no backup.
+2. **Never delete** an entry from `## Anti-patterns` or `## Common mistakes`. Reword it if needed, but keep it.
+3. **One hop only.** Propagate to skills directly connected in the map, never onward (A→B, not A→B→C).
+4. **One ERR per error.** `/log-error` and `/fix-bug` (the debugging skill) already write the `ERR-NNN`. Reuse their id. Create one only when the packet has an error and no id.
+5. **Full refactors need the user's yes.** Small additions do not.
 
-## When Called
+## Input: the learning packet
 
-Synapse is called by the cortex when a task closes, by the bug-hunt skill when a bug is recorded, and by the release skill after a release. It receives a "learning packet" containing:
-- Task description and outcome
-- Errors encountered during implementation
-- Patterns that worked well
-- QA feedback (what was rejected and why)
-- Persona-tester feedback (frictions found)
-- Bug-hunt findings confirmed and the classes they belong to
-- Decisions made during the task
-- Primary skill used
-- Files changed
+From the cortex at task close, from `/fix-bug` and `/log-error` when an error is recorded, and from the release skill. The packet holds the task and its outcome, the primary skill, the files changed, the errors met (with `KE-NNN`/`ERR-NNN` when they exist), the patterns that worked, the verifier, bug-hunt and persona findings, and the decisions. A packet with nothing new ends here: log `no lesson`.
 
-## The Synapse Map
+## 1. Update the primary skill
 
-Maintained at `wiki/skills-map.md`. This file tracks all skill relationships and propagation state.
+Add the lesson to the sections of `templates/project-skill.md` in the foundation skill: a validated pattern goes in `## Patterns`, a rule in `## Rules`, a mistake in `## Anti-patterns` (with its `ERR-NNN` in the Ref column) or `## Common mistakes`, and a new check in `## Verification checklist`. Do not create new sections.
 
-### Map format
+In the frontmatter `metadata:` map, add 1 to `tasks_completed`, set `last_synapse_update`, add any new `connections` and set `maturity`: seed (0 tasks), growing (1-3), mature (4-9) or expert (10+).
+
+## 2. Propagate one hop
+
+For each skill connected to the primary one in the map that the lesson really concerns (shared data, domain concept, library or infrastructure), append one tagged row to its `## Common mistakes` table. Do not rewrite anything else.
+
+```
+| [SYNAPSE from <origin-skill>, YYYY-MM-DD] <the lesson in one line> | See ERR-NNN |
+```
+
+Add 1 to that skill's pending notes in the map. Once a skill has 5 or more pending notes, list it as **due for refactor** in the task report (`/skill-map` also lists them, read-only). When the user agrees, take the backup, fold the notes into the right sections, and run the validation below. On a pass, reset its pending notes to 0.
+
+**Validation after any rewrite:** every anti-pattern and common-mistake entry from the backup is still there, the frontmatter parses with `name`, `description` and `metadata`, and the skill is at least 80% of the backup's length. If any check fails, restore the backup, keep the notes as tagged lines, and log an error entry.
+
+## 3. Guardrail
+
+The error already has an `ERR-NNN` (from `/log-error` or `/fix-bug`): cite it only, and still run 1 and 2 for the lesson. The packet has an error with no `ERR-NNN`: append one to `guardrails/errors-to-avoid.md` in the same format the other writers use: the pattern to avoid, the correct pattern, the skills affected, and `Ref: KE-NNN` when there is one. Then cite it in the primary skill's anti-patterns.
+
+## 4. Map hygiene (from `/session-end`)
+
+Remove skills that no longer exist on disk and add the ones that are missing. Keep only the last 20 propagations: move older rows to `wiki/_archive/YYYY-MM/skills-map.md`, as in the wiki-keeper skill. Flag orphans (skills with no connections) for the user. Report `Skills map: N skills, M connections, K propagations this session`.
+
+## The map: `wiki/skills-map.md`
+
+The foundation skill creates it in phase 2 and `/skill-new` adds the stack skills in phase 4. One line per row, so it stays small:
 
 ```markdown
-# Synapse Map — Skill Connections
+# Skills map
+> last-verified: YYYY-MM-DD
 
-> Auto-generated and maintained by Synapse. Do not edit manually.
-> Last updated: YYYY-MM-DD
+## Skills
+| Skill | Pending notes |
 
 ## Connections
+| Skill | Skill | Shared concept |
 
-| Skill | Connected to | Connection type | Pending notes |
-|-------|-------------|-----------------|---------------|
-
-## Recent Propagations (last 20)
-
-| Date | Origin | Learning | Propagated to |
-|------|--------|----------|---------------|
+## Recent propagations (last 20)
+| Date | Origin | Lesson (one line) | Propagated to |
 ```
 
-### Map initialization
+## Log
 
-The foundation skill creates the initial map in phase 2 by analyzing the generated project skills for shared concepts; stack skills generated in phase 4 are added with `/skill-new`.
-
-## The Four Operations
-
-### Operation 1: Update the primary skill (intelligent refactor)
-
-**Merge safety protocol:**
-
-1. **Backup before rewrite.** Copy the current skill to `.claude/skills/[name]/.history/SKILL-YYYY-MM-DD-N.md` before any modification. This provides rollback capability.
-
-2. **Target canonical sections only.** Integrate new knowledge into ONLY these sections:
-   - "Code Patterns" — add validated patterns
-   - "Anti-Patterns" / "Common Mistakes" — add newly discovered mistakes
-   - "Behavioral Rules" — reinforce or add rules
-   - "Verification Checklist" — add new checks
-
-3. **Protected content rule.** NEVER remove entries from "Anti-Patterns" or "Common Mistakes" during a refactor. These sections are append-only (entries may be reworded for clarity but never deleted).
-
-4. **Post-refactor validation.** After rewriting, verify:
-   - The refactored skill retains ALL anti-pattern entries from the backup
-   - The frontmatter is valid (name, description, and the metadata map with maturity and connections)
-   - The skill is not shorter than 80% of the backup (guards against content loss)
-   - If validation fails → restore from backup → fall back to append-only mode (add `[SYNAPSE]` note)
-
-**Metadata updates (Operation 1 responsibility):**
-- Increment `metadata.tasks_completed` in the frontmatter (project skills keep their counters under `metadata:`)
-- Update `last_synapse_update` to today's date
-- Recalculate `maturity`:
-  - Seed: 0 tasks
-  - Growing: 1-3 tasks
-  - Mature: 4-9 tasks
-  - Expert: 10+ tasks
-- Update `connections` list if new connections were discovered
-
-### Operation 2: Map connections and propagate
-
-After updating the primary skill, evaluate: "Which other skills are impacted by this learning?"
-
-**Propagation rules:**
-- Propagate ONLY to skills with direct connections in the synapse map (no cascading)
-- Propagation is a **contextual suggestion**, not a rewrite — adds a tagged note:
-
-```
-[SYNAPSE from qs-android-widget, 2026-04-16] Caution with DateFormat
-and IT locale — always use DateFormat(..., 'it_IT'). See errors-to-avoid.md.
-```
-
-- **Propagation counter:** Each connection tracks `pending_notes`. When a skill accumulates 5+ pending `[SYNAPSE]` notes, perform a full refactor of that skill (same merge safety protocol as Operation 1). Reset counter to 0 after refactor.
-
-**Connection detection heuristic (for new skills):**
-- Shared code patterns (same libraries, same data models)
-- Shared domain concepts (dates, currency, user-facing text)
-- Shared infrastructure (file I/O, notifications, database)
-- Explicit references (one skill mentions another's domain)
-
-**Updating the synapse map:**
-After propagation, update `wiki/skills-map.md`:
-- Add/update connections for newly discovered relationships
-- Increment `pending_notes` counter for each propagated skill
-- Add entry to "Recent Propagations" table
-
-### Operation 3: Update global guardrails
-
-If the learning includes an error or anti-pattern:
-1. Add to `guardrails/errors-to-avoid.md` with:
-   - Error ID (ERR-NNN, auto-incremented)
-   - Context: what was being done
-   - Error: what went wrong
-   - Fix: how to avoid it
-   - Skills affected: list of skill names
-2. Cross-reference the guardrail entry in the updated skill's anti-pattern section
-
-### Operation 4: Synapse map hygiene
-
-Triggered by `/session-end` (context-manager skill):
-- Remove connections referencing deleted skills
-- Trim "Recent Propagations" to last 20 entries
-- Archive older entries to `wiki/_archive/skills-map-history.md`
-- Flag orphaned skills (connected to nothing) for user review
-- Report: "Synapse map: N skills, M connections, K propagations this session"
-
-## Propagation Example
-
-```
-Task: "Implement Android home screen widget"
-Specialist discovers: DateFormat crashes with IT locale on some Android versions
-
-SYNAPSE executes:
-
-1. BACKUP: .claude/skills/qs-android-widget/.history/SKILL-2026-04-16-1.md
-
-2. UPDATE qs-android-widget:
-   - Add to "Common Mistakes":
-     | DateFormat IT locale crash | Use DateFormat('dd/MM/yyyy', 'it_IT')
-       with explicit locale, not platform default |
-   - Add code pattern: safe DateFormat initialization
-   - Increment tasks_completed: 0 → 1
-   - Update maturity: seed → growing
-
-3. VALIDATE: anti-patterns retained? ✅ | frontmatter valid? ✅ | length >= 80%? ✅
-
-4. CHECK connections in synapse map:
-   qs-android-widget ↔ qs-flutter-patterns (Widget lifecycle)
-   qs-android-widget ↔ qs-subscription-domain (Date logic) — DATE MATCH!
-
-5. PROPAGATE to qs-subscription-domain:
-   [SYNAPSE from qs-android-widget, 2026-04-16] DateFormat with IT locale
-   can crash. Always pass explicit locale: DateFormat('dd/MM/yyyy', 'it_IT')
-   → Increment pending_notes for this connection
-
-6. PROPAGATE to qs-flutter-patterns:
-   [SYNAPSE from qs-android-widget, 2026-04-16] DateFormat locale safety —
-   always use explicit locale, never rely on platform default.
-   → Increment pending_notes for this connection
-
-7. UPDATE guardrails/errors-to-avoid.md:
-   ## ERR-XXX: DateFormat IT locale crash
-   - Context: Android widget date display
-   - Error: DateFormat without explicit locale crashes on some devices
-   - Fix: Always pass 'it_IT' as second parameter
-   - Skills affected: qs-android-widget, qs-subscription-domain, qs-flutter-patterns
-
-8. UPDATE wiki/skills-map.md with new propagation entries
-```
-
-## Logging
-
-After each operation, log to `logs/pipeline/YYYY-MM-DD.md` under the SYNAPSE section of the current task:
-
-- **Operation 1 (Update skill):** Log skill name, maturity change, patterns added, anti-patterns added
-- **Operation 2 (Propagate):** Log each propagation: origin skill → target skill + what was propagated
-- **Operation 3 (Guardrails):** Log ERR-NNN created, skills affected
-- **Operation 4 (Hygiene):** Log summary: N skills, M connections, K propagations
-
-On validation failure (backup restore): log to both pipeline/ and `logs/errors/YYYY-MM-DD-errors.md` with full context (what failed, what was restored).
-
-See `skills/pipeline-logger/SKILL.md` for complete log format.
-
-## Anti-Patterns
-
-| Don't | Do instead |
-|-------|-----------|
-| Delete anti-pattern entries during refactor | Anti-patterns are append-only (reword, never delete) |
-| Propagate to skills without direct connection | Only direct connections in synapse map |
-| Skip the backup before rewriting | Always create .history/ backup first |
-| Cascade propagation (A→B→C) | One hop only — B updates are B's responsibility next cycle |
-| Refactor a skill without validation | Always check: entries retained, length >= 80%, frontmatter valid |
-| Skip logging after propagation | Always log every propagation for audit trail |
+Add one `- synapse | ...` step line to the task block, in the pipeline-logger skill's format. When validation fails, also add an error entry. Read `example.md` in this folder when you need a full worked run.

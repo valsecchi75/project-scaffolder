@@ -12,7 +12,7 @@
 |---|----------|------|-------|----------------|----------|-------------|----------|--------|
 | 1 | {what} | {Trivial/Medium/Complex} | builder | {registry section or —} | {yes/no} | {~Nk} | {command or observation that can fail} | todo |
 
-> **Parallel = yes** only with no dependency on another activity: it can run in its own worktree.
+> **Parallel = yes** only with no dependency on another activity and no git-ignored input (`secrets/`, `.env`) for its VERIFY: `/task --parallel` can then build it in its own worktree.
 > **Status:** `todo` · `in-progress` · `done — <evidence>` · `moved to M{n+1}`.
 
 ## Assumptions and unknowns

@@ -9,6 +9,7 @@ Before a version leaves, the strongest available model hunts across the whole pr
 
 ## Gate in
 
+0. **Resume.** `.scaffolder/phase` is already `release` and a `docs/release/v<version>.md` says `Status: in progress`: read it and its rounds journal, say in one line which step comes next (the first one with nothing recorded in the report; step 3 continues from the journal), and continue there. Skip 1-3 below: the tree legitimately holds the report, the journal and the release fixes.
 1. `.scaffolder/phase` is `build` and the closed milestones cover the release scope agreed with the user. Ask which milestones this release contains if it is not obvious.
 2. The working tree is clean. Dirty → list the files and stop.
 3. Write `release` to `.scaffolder/phase`. Determine the next version (semver) and create `docs/release/v<version>.md` from `templates/release-report.md`.
@@ -21,17 +22,19 @@ From the last tag (or the first commit): commits, changed files, milestones and 
 
 Dispatch `project-scaffolder:sweeper` to run, from `wiki/tech-stack.md`: build, full test suite, lint, type check, dependency audit. Also a sweep for leftover debug output, skipped tests, TODO and FIXME added since the last tag, and hardcoded values where the project uses tokens or translations. Record the results.
 
-## Step 3 — Whole-project debug with the strongest model
+**Gate for the rounds.** Every round pays for five hunters that must run the code, so the rounds start only on a green build and test suite. The build fails, the suite cannot start, or a test fails (except one the sweeper's solo rerun marks as flaky; list it in the report): stop before step 3, fix each failure with `/task --release-fix` as a confirmed HIGH finding, and rerun this step. Lint, type check, audit and sweep hits do not block the rounds; they wait for step 4 unless a round confirms them.
 
-Run `/bug-hunt --all` (the bug-hunt skill): up to four `project-scaffolder:bug-hunter` agents in parallel on separate areas, then the sweeper's second opinion on every CRITICAL and HIGH finding.
+## Step 3 — Verification rounds
 
-The bug-hunter runs on Fable. Before this step, check `wiki/claude-code.md`: if a newer, more capable model has been released and is available, tell the user and ask whether to run the hunt with it instead (by updating the `model` of the bug-hunter agent in the plugin, not by overriding at dispatch).
+Read `rounds.md` in this skill folder and follow it: ask the user (AskUserQuestion) for 1, 5, 10 or 100 rounds with the cost estimate, keep the journal `docs/release/v<version>-rounds.md`, run the `project-scaffolder:release-rounds` workflow (or its documented fallback), and fix every confirmed CRITICAL and HIGH finding between rounds with `/task --release-fix`. The loop ends dry, at the chosen cap, or on a hard stop; record the outcome in the report.
 
-Two built-in reviews are worth suggesting to the user at this point, because only they can start them: `/code-review` on the release diff, and `/security-review` when the release touches authentication, payments, uploads or personal data. Fold their findings into the report as additional input.
+The bug-hunter runs on Fable, its agent `model`. If `wiki/claude-code.md` records a newer, more capable model, tell the user in one line: agent models change in a plugin update by its maintainer, never by editing the installed plugin or by overriding the model at dispatch.
+
+Two built-in reviews add an independent pass: `/code-review <last tag>..HEAD`, and `/security-review` when the release touches authentication, payments, uploads or personal data. They cost model usage, so offer them first (AskUserQuestion, header `Reviews`); on a yes, start them yourself through the Skill tool (Claude can start both; `/code-review` runs as a background subagent, so wait for its findings). Fold their findings into the report as additional input: a CRITICAL or HIGH one counts as confirmed only after the sweeper's refutation job fails to refute it, as in the rounds.
 
 ## Step 4 — Fix loop
 
-Every confirmed CRITICAL and HIGH finding is fixed before release, through `/task --release-fix <finding>` (the cortex's full path: plan, build, verify, bug hunt on the fix). MEDIUM and LOW: the user decides, per finding, fix now or record in `wiki/priorities.md` for the next milestone. After the fixes, rerun step 2.
+CRITICAL and HIGH findings were fixed inside the rounds, through `/task --release-fix <finding>` (the cortex's full path: plan, build, verify, bug hunt on the fix). Now the deferred MEDIUM and LOW findings and the unverified ones: the user decides, per finding, fix now (same command) or record in the notebook `wiki/todo.md` (backlog skill, `from: release v<version>`) for the next milestone. After the fixes, rerun step 2.
 
 ## Step 5 — Release gate
 

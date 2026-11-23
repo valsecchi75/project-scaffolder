@@ -122,12 +122,13 @@ for (let r = START; r <= LAST; r++) {
   const known = [...seen].slice(-150).join('\n')
   // Each task filters its own list, so the scope check never depends on the order parallel() returns results in.
   const swept = await parallel(plan.map(p => async () => {
+    // A throwing agent counts as a failed sweep too, never as "nothing new".
     const res = await agent(
       `Research topic: "${args.topic}". Source: ${SOURCES[p.s].name}. Look for ${SOURCES[p.s].look}.\n` +
       `Use WebSearch with ${scopeOf(p.s)} (the two lists cannot be combined), at most 6 searches. ` +
       (p.queries.length ? `Start from these gap queries: ${JSON.stringify(p.queries.map(clean))}. ` : '') +
       `Do not fetch pages. Return up to 8 candidate URLs worth a deep read, the most specific first (a thread or issue beats a home page), with one line on why each matters, and the queries you ran. Skip these already-known pages (written without scheme):\n${known || '(none)'}\n\n${QUARANTINE}`,
-      { label: `r${r} sweep ${p.s}`, model: 'sonnet', schema: CANDIDATES })
+      { label: `r${r} sweep ${p.s}`, model: 'sonnet', schema: CANDIDATES }).catch(() => null)
     if (!res) failures.sweeps++
     const all = res ? res.candidates : []
     const kept = all.filter(c => safeUrl(c.url) && inScope(p.s, c.url))

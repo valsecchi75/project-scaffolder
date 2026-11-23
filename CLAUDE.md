@@ -47,3 +47,4 @@ Before any other work, check Claude Code for changes:
 | `wiki/decisions.md` | Design decisions of the plugin (append-only) |
 | `wiki/sources.md` | Third-party projects evaluated, with verdicts |
 | `wiki/log.md` | Append-only history: `## [YYYY-MM-DD] <op> \| <title>` |
+| `wiki/todo.md` | Notebook of unplanned work, `T-NNN` by priority: `bash skills/backlog/scripts/todo-report.sh .` |

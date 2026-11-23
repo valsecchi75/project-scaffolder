@@ -36,7 +36,7 @@ Impact: `adopt` (use it now) · `adapt` (change the plugin) · `watch` (may matt
 | Workflow script globals `args`, `agent()`, `parallel()`, `pipeline()`, `phase()`, `log()`; the guarded `budget` (the user's `+500k` target) | `workflows/` | docs; `budget` only in the bundled `/workflow-authoring` reference |
 | Command frontmatter `argument-hint`, `disable-model-invocation`; `context: fork` + `model` only on read-only reports; no `name` (DEC-009) | `commands/*.md` | docs + `claude plugin validate` |
 | Command names starting with a digit (`1-brainstorm`) | `commands/` | `claude plugin validate`, 2026-11-23 |
-| SessionStart `additionalContext` plus top-level `systemMessage` (the banner), matchers `startup\|resume\|clear\|compact` | `hooks/session-start.sh` | docs |
+| SessionStart `additionalContext` plus top-level `systemMessage` (the banner), matchers `startup\|resume\|clear\|compact\|fork` | `hooks/session-start.sh` | docs |
 | `UserPromptExpansion` block with `reason` (shown to the user), matcher on the namespaced command name | `hooks/command-gate.sh` | docs + `tests/test-hooks.sh` |
 | Plugin workflows (`workflows/*.js`, pure-literal `meta` first), run as `/project-scaffolder:<name>` (DEC-010) | `workflows/` | docs, 2026-11-23 |
 | `claude plugin eval` with `evals/<case>/prompt.md` and graders (DEC-012) | `evals/` | docs, 2026-11-23 |

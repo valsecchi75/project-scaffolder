@@ -1,7 +1,7 @@
 ---
 name: phase-flow
 description: Use when working in a project that has a .scaffolder/phase file, when a numbered phase command (/1-brainstorm to /5-release) runs, or when the user asks which phase the project is in or what comes next.
-allowed-tools: Bash(bash ${CLAUDE_SKILL_DIR}/scripts/phase-status.sh *)
+allowed-tools: Bash(bash "${CLAUDE_SKILL_DIR}/scripts/phase-status.sh" *)
 ---
 
 # Phase Flow — the contract every phase follows
@@ -19,7 +19,7 @@ A project managed by this plugin moves through five phases, strictly in order. E
 Supporting files, read only when the case applies:
 - `${CLAUDE_SKILL_DIR}/capabilities.md`: the commands each phase adds and what stays blocked. Read it when the user asks what they can do now, instead of guessing.
 - `${CLAUDE_SKILL_DIR}/paths.md`: where every project file lives. Read it when you need a location the current phase skill does not name.
-- **Status:** `/phase-status`. Asked in conversation, run `bash ${CLAUDE_SKILL_DIR}/scripts/phase-status.sh` (read-only: phase, exit artifacts, gate, next, what can run now) and relay its lines; never re-derive them.
+- **Status:** `/phase-status`. Asked in conversation, run `bash "${CLAUDE_SKILL_DIR}/scripts/phase-status.sh"` (read-only: phase, exit artifacts, gate, next, what can run now) and relay its lines; never re-derive them.
 
 ## The state file
 

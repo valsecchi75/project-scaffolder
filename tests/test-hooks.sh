@@ -146,6 +146,35 @@ check "WebFetch: a key in the URL"             deny  "$(run secrets-guard.sh "$(
 check "SendMessage: a key to another session"  deny  "$(run secrets-guard.sh "$(printf '{"tool_name":"SendMessage","tool_input":{"to":"a","message":"use %s"}}' "$KEY")")"
 check "WebSearch: ordinary query"              allow "$(run secrets-guard.sh '{"tool_name":"WebSearch","tool_input":{"query":"wcag contrast"}}')"
 
+# Formats other than NAME=value, and values that are not secrets (Fable review).
+printf 'DATABASE_URL=postgres://app:Pw0rdSecret77@db.internal.example/app\nSMTP_HOST=smtp.mailprovider.example\nSUPABASE_PROJECT_REF=abcd1234efgh5678ijkl\nDB_PASSWORD=short-pw-12x\n' > "$PROJ/secrets/more.env"
+printf -- '- API key: fakekey_51HxYzAbCdEf0123456789xyz\n| github | faketok_TableCell0123456789abcdefABCD |\nAuthorization: Bearer fakejwtHeader0123.payload0123456789.sig\n{"client_id":"cid","client_secret":"Cs3cr3tValueMinified0123"}\nhttps://dashboard.example.com/settings/apikeys\n' > "$PROJ/secrets/notes.md"
+printf '{"private_key": "-----BEGIN PRIVATE KEY-----\\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7\\n-----END PRIVATE KEY-----\\n"}\n' > "$PROJ/secrets/sa.json"
+mcpb() { printf '{"cwd":"%s","tool_name":"mcp__x__send","tool_input":{"body":"%s"}}' "$JSON_ROOT" "$1"; }
+check "secret: password inside a URL"          deny  "$(run secrets-guard.sh "$(mcpb "pw Pw0rdSecret77")")"
+check "secret: free-text API key line"         deny  "$(run secrets-guard.sh "$(mcpb "fakekey_51HxYzAbCdEf0123456789xyz")")"
+check "secret: Markdown table cell"            deny  "$(run secrets-guard.sh "$(mcpb "faketok_TableCell0123456789abcdefABCD")")"
+check "secret: Bearer header line"             deny  "$(run secrets-guard.sh "$(mcpb "fakejwtHeader0123.payload0123456789.sig")")"
+check "secret: minified JSON value"            deny  "$(run secrets-guard.sh "$(mcpb "Cs3cr3tValueMinified0123")")"
+check "secret: private key in a JSON string"   deny  "$(run secrets-guard.sh "$(mcpb "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7")")"
+check "secret: 12-char password by its name"   deny  "$(run secrets-guard.sh "$(mcpb "short-pw-12x")")"
+check "not secret: a bare URL line"            allow "$(run secrets-guard.sh "$(mcpb "see https://dashboard.example.com/settings/apikeys")")"
+check "not secret: a hostname"                 allow "$(run secrets-guard.sh "$(mcpb "smtp.mailprovider.example")")"
+check "not secret: a project ref"              allow "$(run secrets-guard.sh "$(mcpb "abcd1234efgh5678ijkl")")"
+case "$(run secrets-guard.sh "$(mcpb "pw Pw0rdSecret77")")" in
+  *"more.env DATABASE_URL"*) PASS=$((PASS + 1)) ;;
+  *) FAIL=$((FAIL + 1)); echo "FAIL  the reason names the file and variable" ;;
+esac
+check "git: a commit message saying secrets"   allow "$(run secrets-guard.sh "$(bash_json 'git add src/a.js && git commit -m docs-on-secrets-loading')")"
+printf 'k=%s\n' "$KEY" > "$PROJ/leak.txt"; git -C "$PROJ" add leak.txt 2>/dev/null
+check "git: commit of a staged copy of a key"  deny  "$(run secrets-guard.sh "$(bash_json "git commit -m wip")")"
+git -C "$PROJ" rm -q --cached leak.txt 2>/dev/null; rm -f "$PROJ/leak.txt"
+edit_json() { printf '{"cwd":"%s","tool_name":"Edit","tool_input":{"file_path":"%s","old_string":"%s","new_string":"%s"}}' "$JSON_ROOT" "$(jpath "$1")" "$2" "$3"; }
+check "Edit that removes a leaked key"         allow "$(run secrets-guard.sh "$(edit_json src/c.js "k=$KEY" "k=process.env.K")")"
+check "Edit that adds a key"                   deny  "$(run secrets-guard.sh "$(edit_json src/c.js "x" "k=$KEY")")"
+check "key into a .env file git does not ignore" deny "$(run secrets-guard.sh "$(write_json apps/web/.env.production "K=$KEY")")"
+rm -f "$PROJ/secrets/more.env" "$PROJ/secrets/notes.md" "$PROJ/secrets/sa.json"
+
 # A publish that names many files is checked in batches: a guard that runs past
 # its 15 s timeout refuses the call (onFailure "block"). One process per file
 # took about 40 s for 60 files on Windows.

@@ -34,3 +34,6 @@ Loops as workflows, command gate, session banner, PreCompact snapshot, read-only
 
 ## [2026-11-23] feature | /todo notebook, outward secrets guard, Fable quota fallback
 `/todo` and skill `backlog` (`wiki/todo.md`, read-only `todo-report.sh`), wired into milestone plan and close, bug hunt, persona test, release and session end. Secrets guard extended to MCP, web, session messages and Artifact supporting files. A Fable agent out of quota is offered on Opus, with a `/todo` item to repeat it. DEC-019, DEC-020. Phase 1 stays without wiki writes (regression review): its loose ends go under the brief's Open questions.
+
+## [2026-11-23] review | Fable 5.2 pre-release review and blind quality judge
+Release review: SHIP AFTER FIXES, no blocker; HIGH findings on the secrets guard (formats not recognised, non-secrets blocking calls) and on unquoted script paths, fixed with test cases, plus the MEDIUM/LOW ones (git add arguments, staged content on commit/push, Edit removing a value, .env only when ignored, fork sessions, research sweep failures). Blind judge on the Sorsi micro-project: 81/100 against 57/100 for 4.0.0, higher on all twelve dimensions; its five remaining weaknesses are T-001..T-005 in `wiki/todo.md`.

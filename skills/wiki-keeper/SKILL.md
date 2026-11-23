@@ -1,7 +1,7 @@
 ---
 name: wiki-keeper
 description: Use when /wiki-ingest or /wiki-lint runs, when the user adds a document, link or research to the project, when a question about the project should be answered from its wiki, or when wiki pages are stale, contradictory or over their size budgets.
-allowed-tools: Bash(bash ${CLAUDE_SKILL_DIR}/scripts/wiki-report.sh *)
+allowed-tools: Bash(bash "${CLAUDE_SKILL_DIR}/scripts/wiki-report.sh" *)
 ---
 
 # Wiki Keeper — the second brain
@@ -31,7 +31,7 @@ Projects with more than about a hundred pages can add a local search tool; the i
 
 A health check. Report first, change nothing until the user approves the plan.
 
-**Start with the script.** From the project root run `bash ${CLAUDE_SKILL_DIR}/scripts/wiki-report.sh` (add `--all` for every page). It reads nothing into context but its own short output: estimated tokens per page against the budget for its type, the five largest pages, index lines over 200 characters, pages missing from the index (the orphans), index entries without a page, relative links that do not resolve (`page:line -> target`), `@` imports in `CLAUDE.md` outside backticks, and unparsable `wiki/log.md` headers. Open only the pages it flags and the ones the judgment checks below need. Without Git Bash, make these checks by hand from `wiki/index.md` and the line counts, and say so.
+**Start with the script.** From the project root run `bash "${CLAUDE_SKILL_DIR}/scripts/wiki-report.sh"` (add `--all` for every page). It reads nothing into context but its own short output: estimated tokens per page against the budget for its type, the five largest pages, index lines over 200 characters, pages missing from the index (the orphans), index entries without a page, relative links that do not resolve (`page:line -> target`), `@` imports in `CLAUDE.md` outside backticks, and unparsable `wiki/log.md` headers. Open only the pages it flags and the ones the judgment checks below need. Without Git Bash, make these checks by hand from `wiki/index.md` and the line counts, and say so.
 
 | Page type | Budget (lines / ~tokens) |
 |---|---|

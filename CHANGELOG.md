@@ -25,10 +25,10 @@ Projects started with 4.0 keep working: `/4-build` writes the new `verify` skill
 - **Wiki and logs**: `/wiki-lint` starts from a token report against page budgets and finds broken links and `@` imports; the pipeline log is one parsable line per step, and `/pipeline-stats` counts it with a script instead of reading it.
 - **`/setup-check`** detects Git Bash, hooks turned off, workflows off, a missing `fallbackModel`, why the Artifact tool is unavailable and auto memory off, each with the exact fix and what degrades.
 - **`/todo` — the project notebook** (`wiki/todo.md`, skill `backlog`): advice from users and testers, loose ideas, bug hunts and checks asked for and never run, deferred findings, debt and open questions, one `T-NNN` line each with priority, type, date and source. Claude adds to it when something is left for later; a read-only script shows it P1 first and oldest first and flags old P1 items; `/milestone-plan` starts from it and `/milestone-close` reconciles it; the session brief shows the open count. Created by `/2-foundation` from the brief's open questions; phase 1 still writes only the brief and `raw/`.
-- **Secrets never leave the machine through any tool**: the secrets guard now also covers MCP servers (GitHub, mail, docs, chat, hosting), web fetch and search, messages to other or cloud sessions, and every file an Artifact publish carries (supporting files, assets, database rows), by value and by `secrets/` path. The checks run in batches, so a publish that names many files stays well inside the hook's timeout (a timeout refuses the call).
+- **Secrets guarded on every way out**: the secrets guard now also covers MCP servers (GitHub, mail, docs, chat, hosting), web fetch and search, messages to other or cloud sessions, and every file an Artifact publish carries (supporting files, assets, database rows), by value and by `secrets/` path. The checks run in batches, so a publish that names many files stays well inside the hook's timeout (a timeout refuses the call).
 - **Fable out of quota**: a Fable agent that fails on a usage limit is offered again on Opus now or after the reset; a step run on Opus is added to `/todo` to be repeated on Fable.
 - **Plugin evals** (`evals/`, `claude plugin eval`): three cases that push against a gate in a real session: the brainstorm creates no code and asks instead; `/task` refuses without an approved milestone plan; a value from `secrets/` never reaches another file.
-- `tests/test-hooks.sh` grows from 57 to 172 cases and now also covers the bundled scripts.
+- `tests/test-hooks.sh` grows from 57 to 188 cases and now also covers the bundled scripts.
 
 ### Changed
 - **Commands no longer switch the model** (a switch re-reads the whole conversation without the prompt cache). Routing holds through the agents' own models; the read-only reports (`/phase-status`, `/pipeline-stats`, `/skill-map`, `/setup-check`) run in a forked Sonnet subagent.
@@ -45,6 +45,10 @@ Projects started with 4.0 keep working: `/4-build` writes the new `verify` skill
 - The version is set only in `plugin.json`; the marketplace entry no longer repeats it (with both set, `plugin.json` wins and `claude plugin validate` warns).
 
 ### Fixed
+- **Secrets guard (pre-release review on Fable 5.2):** keys written other than as `NAME=value` (inside a URL, in JSON, Markdown, free text, PEM or base64 lines) were not recognised, while identifiers, hostnames and plain URLs in `secrets/` blocked ordinary calls; one pass now reads every file and refusals name the file and variable, never the value. A commit whose changes contain a value, and a push while a committed file holds one, are refused; a `git add` is judged on its own arguments, so a commit message mentioning secrets passes; an Edit that removes a leaked value passes; a `.env` file is exempt only when git ignores it.
+- `/phase-status`, the phase-flow and wiki-keeper scripts failed when the plugin was installed under a path with a space (unquoted script paths).
+- A forked session (`--fork-session`, `/branch`) now gets the session banner and phase context too.
+- A research sweep agent that threw was counted as "nothing new" instead of a failure.
 - `/phase-status` in phase 5 could take the rounds journal for the release report, and showed a draft brief's interface as `{yes|no}`.
 - After a release the session banner and the compaction snapshot pointed to `/4-build`, while the release sets the phase back to build and suggests `/milestone-plan`; all now say `/milestone-plan`.
 - Research no longer offers `/deep-research` as the fallback when workflows are off: it is a workflow too.

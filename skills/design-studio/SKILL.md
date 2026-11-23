@@ -19,7 +19,7 @@ Questions and dispatch follow the phase-flow skill. Here an approval offers `App
 - **Section re-entry (`/3-design --section <name>`)** from build or release: allowed without changing the phase. Mark the section `in-progress` in the registry; the build task that needed it waits.
 - The brief says `has_interface: no` → stop and suggest `/4-build`.
 
-Read: the brief (brand feel, references, constraints, accessibility requirement), `wiki/design/registry.md`, the working agreements in `CLAUDE.md`. While the registry's `Artboard home` line still holds its `{Artifact | Local}` placeholder, read `entry.md` (in this skill's folder): artboard home (Artifact or Local mode), browser check and Step 0, the references. In Local mode, keep its rules for every step below.
+Read: the brief (brand feel, references, constraints, accessibility requirement), `wiki/design/registry.md`, the working agreements in `CLAUDE.md`. Read `entry.md` (in this skill's folder: artboard home, Local mode, browser check, Step 0 references) when the registry's `Artboard home` line says `Local` or still holds its placeholder, or the `References` line still holds its placeholder. In Local mode its rules replace every Artifact call below.
 
 If the working agreements say design comes from an external source and is ported one to one, the job here is to import and register it: bring the source into `design/`, run the critique, record it. Do not redesign it.
 

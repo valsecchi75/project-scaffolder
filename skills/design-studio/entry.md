@@ -1,6 +1,6 @@
 # Phase entry — artboard home, browser check, references
 
-Read this once, at phase entry (the registry's `Artboard home` line still holds its placeholder), and again whenever Local mode applies. A `--section` re-entry reuses the registry's lines.
+Read at phase entry (the registry's `Artboard home` or `References` line still holds its placeholder) and in every session of a Local-mode project. Sections already decided are skipped: a recorded `Artboard home`, `Browser check` or `References` line holds.
 
 ## Where the artboards live
 

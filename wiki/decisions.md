@@ -173,7 +173,7 @@
 **Options:** A — the gate checks only the phase word; the approved brief and the closed design phase are checked by the skills' instructions · B — the gate also refuses `/2-foundation` without `status: approved` and `/4-build` without `phase | Design complete` (unless `has_interface: no`), with its own parsing · C — as B, reading the facts from `phase-status.sh --facts`.
 **Choice:** C.
 **Why:** the blind judge on 4.1.0 found both steps passing on instructions alone. A second parser of the brief and the log would drift from the one `/phase-status` shows the user; one script keeps the report and the refusal in agreement.
-**Consequences:** `2-foundation` joins the `UserPromptExpansion` matcher; `--upgrade` passes. The fact gates apply only to the step forward from brainstorm, foundation or design. The gate still fails open: without the script it falls back to the phase check.
+**Consequences:** `2-foundation` joins the `UserPromptExpansion` matcher. After the Fable review: `--upgrade` has no exemption (a v3 project has no phase file and passes anyway; `upgrade.md` refuses when one exists); `/3-design` and `/4-build` from phase 2 also need `phase | Foundation complete`; `design=complete` needs the registry clean as well as the log line; the brief's values are compared exactly after stripping quotes, in the report and the gate alike. The fact gates apply only to the step forward from brainstorm, foundation or design. The gate still fails open: without the script it falls back to the phase check.
 
 ## DEC-023: Keys never ship; the release gate scans the build with the guard's own secret map
 
@@ -181,7 +181,7 @@
 **Options:** A — the guard's repository checks are enough · B — a release-gate grep with its own idea of a secret · C — `ps_secret_map` moves to `hooks/secrets-lib.sh`, sourced by the guard and by `skills/release/scripts/build-secrets.sh`, which scans the build output and prints file and variable names only.
 **Choice:** C, plus an architect rule: a client-only product that needs a keyed service gets a proxy or a keyless service.
 **Why:** a key read at build time (a bundler env prefix) lands in the files users download, where no guard looks; two recognisers would disagree on what a secret is.
-**Consequences:** a `leak:` line is a CRITICAL release finding (fix, rotate, rebuild). The script exits 2, never "clean", when it cannot read `secrets/` (a sandbox applying a Read deny rule) or nothing is built. `wiki/tech-stack.md` records the build output folder at the platform decision. The guard fails closed without `secrets-lib.sh`.
+**Consequences:** a `leak:` line is a CRITICAL release finding (fix, rotate, rebuild). The script exits 2 (`NOT CHECKED`), never "clean", when a key file cannot be read in full (sandbox, UTF-16, 256 KiB+), nothing is built, a path lies outside the project or inside `secrets/`, or `.env.example` names keys and no `secrets/` exists; it finds the project root itself (no `--project`, so it cannot be pointed at a decoy folder) and takes the main checkout's `secrets/` from a worktree. The loading command gains `2>/dev/null` so a malformed line is never echoed. `wiki/tech-stack.md` records the build output folder at the platform decision. The guard fails closed without `secrets-lib.sh`.
 
 ## DEC-024: Blocking reads of `secrets/` is the recommended answer in phase 2
 

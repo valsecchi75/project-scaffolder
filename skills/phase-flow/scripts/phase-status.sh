@@ -10,9 +10,11 @@
 # nearest .scaffolder/phase (stopping at the git root), so a session whose
 # shell moved into a subfolder still reports the right project.
 #
-# --facts prints only the gate facts, as key=value lines, and stops there:
-#   phase=<word|none>  brief=<status|missing>  interface=<yes|no|unknown>
-#   design=<complete|open>
+# --facts prints only the gate verdicts, as key=value lines, and stops there:
+#   phase=<word|none>  brief=<approved|draft|missing>  interface=<yes|no|unknown>
+#   foundation=<complete|open>  design=<complete|open>
+# design=complete needs what the phase-3 gate below needs: the registry clean
+# (system approved, sections listed, none open) and the log line.
 # hooks/command-gate.sh reads them, so the typed-command gate and the report
 # share one reading of the brief and the log.
 #
@@ -35,9 +37,27 @@ if [ $# -eq 0 ]; then
   [ -f "$d/.scaffolder/phase" ] && cd "$d"
 fi
 
-# Frontmatter value of key $1 in the brief (first match, CR and spaces stripped).
-fm() { sed -n "s/^$1:[[:space:]]*//p" docs/brief/BRIEF.md 2>/dev/null | head -n 1 | tr -d '\r' | sed 's/[[:space:]]*$//'; }
+# Frontmatter value of key $1 in the brief (first match; CR, spaces and
+# surrounding quotes stripped: "approved" and approved read the same).
+fm() { sed -n "s/^$1:[[:space:]]*//p" docs/brief/BRIEF.md 2>/dev/null | head -n 1 | tr -d '\r' \
+  | sed -e 's/[[:space:]]*$//' -e "s/^[\"']\(.*\)[\"']\$/\1/"; }
 logged() { [ -f wiki/log.md ] && grep -qF "$1" wiki/log.md; }
+
+# Design registry ("## Design system" and "## Sections" tables) -> SYS NS OK OPEN.
+registry() {
+  SYS=missing; NS=0; OK=0; OPEN=""
+  [ -f wiki/design/registry.md ] || return 0
+  local REG R
+  REG=$(tr -d '\r' < wiki/design/registry.md | awk -F'|' '
+    /^## /      { sec = $0; next }
+    $0 !~ /^\|/ { next }
+    { for (i = 2; i <= NF; i++) gsub(/^[ \t]+|[ \t]+$/, "", $i) }
+    $2 == "#" || $2 == "Name" || $2 ~ /^[-: ]+$/ || $2 ~ /^\{/ || $3 ~ /^\{/ { next }
+    sec ~ /^## Design system/ { sys = ($6 != "" && $6 !~ /^\{/) ? "approved" : "not approved" }
+    sec ~ /^## Sections/ { n++; if ($5 ~ /^approved/) ok++; else open = open (open ? ", " : "") $3 " (" $5 ")" }
+    END { printf "%s|%d|%d|%s\n", (sys ? sys : "missing"), n, ok, open }')
+  SYS=${REG%%|*}; R=${REG#*|}; NS=${R%%|*}; R=${R#*|}; OK=${R%%|*}; OPEN=${R#*|}
+}
 
 # The gate facts. A draft still shows the template placeholder ({yes|no}).
 BS=""; BA=""; UI=""
@@ -47,11 +67,16 @@ if [ -f docs/brief/BRIEF.md ]; then
   case "$BA" in \{*) BA="" ;; esac
 fi
 
+# --facts: verdicts only, judged exactly as the report below judges them.
 if [ -n "$FACTS" ]; then
   P=none; [ -f .scaffolder/phase ] && P=$(head -n 1 .scaffolder/phase | tr -cd 'a-z')
-  B=missing; [ -f docs/brief/BRIEF.md ] && B=${BS:-none}
-  D=open; logged "phase | Design complete" && D=complete
-  printf 'phase=%s\nbrief=%s\ninterface=%s\ndesign=%s\n' "${P:-none}" "$B" "${UI:-unknown}" "$D"
+  B=missing; [ -f docs/brief/BRIEF.md ] && B=draft; [ "$BS" = approved ] && B=approved
+  I=unknown; [ "$UI" = no ] && I=no; [ "$UI" = yes ] && I=yes
+  F=open; logged "phase | Foundation complete" && F=complete
+  registry
+  D=open
+  [ "$SYS" = approved ] && [ "$NS" -gt 0 ] && [ -z "$OPEN" ] && logged "phase | Design complete" && D=complete
+  printf 'phase=%s\nbrief=%s\ninterface=%s\nfoundation=%s\ndesign=%s\n' "${P:-none}" "$B" "$I" "$F" "$D"
   exit 0
 fi
 
@@ -96,21 +121,12 @@ fi
 # 3 design (registry: "## Design system" and "## Sections" tables)
 FIRST_OPEN=""
 if [ "$N" -ge 3 ] && [ "$UI" != no ]; then
+  registry
   if [ -f wiki/design/registry.md ]; then
-    REG=$(tr -d '\r' < wiki/design/registry.md | awk -F'|' '
-      /^## /      { sec = $0; next }
-      $0 !~ /^\|/ { next }
-      { for (i = 2; i <= NF; i++) gsub(/^[ \t]+|[ \t]+$/, "", $i) }
-      $2 == "#" || $2 == "Name" || $2 ~ /^[-: ]+$/ || $2 ~ /^\{/ || $3 ~ /^\{/ { next }
-      sec ~ /^## Design system/ { sys = ($6 != "" && $6 !~ /^\{/) ? "approved" : "not approved" }
-      sec ~ /^## Sections/ { n++; if ($5 ~ /^approved/) ok++; else open = open (open ? ", " : "") $3 " (" $5 ")" }
-      END { printf "%s|%d|%d|%s\n", (sys ? sys : "missing"), n, ok, open }')
-    SYS=${REG%%|*}; R=${REG#*|}; NS=${R%%|*}; R=${R#*|}; OK=${R%%|*}; OPEN=${R#*|}
     FIRST_OPEN=${OPEN%% (*}
     echo "design system: $SYS"
     echo "sections: $NS listed · $OK approved${OPEN:+ · open: $OPEN}"
   else
-    SYS=missing; NS=0; OK=0; OPEN=""
     echo "design: no wiki/design/registry.md yet"
   fi
   if [ "$N" -eq 3 ]; then

@@ -46,3 +46,6 @@ Command gate on gate facts through `phase-status.sh --facts`; build output scann
 
 ## [2026-11-23] release | v4.1.1 (prepared)
 T-001 to T-007 of `wiki/todo.md`: fact gates for `/2-foundation` and `/4-build`, loops sized to the project, `build-secrets.sh` in the release gate and the architect's no-keys-on-device rule, lighter phase commands, Block reads as the phase-2 default, Code Mode in `/setup-check` with composed-command guard tests, auto-format on the input's cwd, `deny-dangerous.ps1` removed. Branch `v4.1.1`; not pushed.
+
+## [2026-11-23] review | Fable 5.2 review of v4.1.1
+SHIP AFTER FIXES, no CRITICAL. Fixed: build-secrets.sh found the project from the current folder only and passed "clean" when it had not checked (HIGH); it now finds the root, takes a worktree's secrets/ from the main checkout, refuses paths outside the project or inside secrets/, and answers NOT CHECKED for unreadable, UTF-16 or large key files. Gate: no --upgrade exemption, foundation closed required for /3-design and /4-build, design closed means registry clean plus log line, brief values compared exactly in report and gate. Loading command with 2>/dev/null and a variable check. Design-studio reads entry.md in Local-mode sessions. README, capabilities card, CHANGELOG aligned. Open: T-008.

@@ -62,7 +62,7 @@ Create `wiki/skills-map.md` in the synapse skill's layout (Skills with 0 pending
 
 ### 5. Secrets — `secrets/`
 
-1. `secrets/README.md`: hand-over files with keys, one `.env`-style file per service; git-ignored, never published; keys are used by loading the file in the command that needs it; values are never copied anywhere else; reads by Claude as DEC-003 says.
+1. `secrets/README.md`: hand-over files with keys, one `.env`-style file per service, `NAME='value'` with single quotes (a value with spaces or shell characters otherwise breaks loading); git-ignored, never published; keys are used by loading the file in the command that needs it; values are never copied anywhere else; reads by Claude as DEC-003 says.
 2. `.gitignore` with at least `secrets/`, `.env`, `.env.*`, `!.env.example`.
 3. `.env.example`: the variable name of every external service in the working agreements, empty, with a comment naming its file in `secrets/`.
 4. Ask the user to drop the real key files into `secrets/` themselves. Never ask them to paste a key into the chat.
@@ -75,7 +75,7 @@ The guards are this plugin's hooks: a clone opened without the plugin runs none.
 
 1. **Plugin id:** the `project-scaffolder@…` entry of `claude plugin list --json`, or without `claude` on the PATH (VS Code) of `enabledPlugins` in `~/.claude/settings.json` (read, never change it). Keep `extraKnownMarketplaces` only for `project-scaffolder-marketplace`; for another marketplace drop the block and tell the user teammates add it themselves.
 2. **Existing file:** merge these keys, keep every other key.
-3. **Key reads.** Explain in two lines: what Claude reads from `secrets/` lands in the session transcript; a deny rule stops Claude's file tools and simple file commands such as `cat` from reading the folder, for everyone who clones the repository, while a command that loads a key file in the shell still works. Ask one question, header `Key reads`: **Block reads (Recommended)**, "keys load in the shell (`set -a; . secrets/<file>.env; set +a; <command>`), values never reach the transcript", or **Readable**, "Claude may open key files; their values land in the transcript". With Block reads, write it in `secrets/README.md`, add `"permissions": { "deny": ["Read(./secrets/**)"] }`, and once a key file is in place run `set -a; . secrets/<file>.env; set +a; echo loaded`: if loading is blocked too (a sandbox applies the rule to every process), say so and offer Readable. Record the answer as DEC-003 and in the `CLAUDE.md` Secrets section.
+3. **Key reads.** Explain in two lines: what Claude reads from `secrets/` lands in the transcript; a deny rule stops its file tools and commands such as `cat`, for everyone who clones the repository, while loading a key file in the shell still works. Ask one question, header `Key reads`: **Block reads (Recommended)**, "keys load in the shell (`set -a; . secrets/<file>.env 2>/dev/null; set +a; <command>`), values never reach the transcript", or **Readable**, "Claude may open key files; their values land in the transcript". With Block reads, write it in `secrets/README.md`, add `"permissions": { "deny": ["Read(./secrets/**)"] }`, and once a key file is in place run `set -a; . secrets/<file>.env 2>/dev/null; set +a; [ -n "${NAME:+x}" ] && echo loaded || echo not-loaded`, with `NAME` a variable of that file from `.env.example` (`2>/dev/null` stops a malformed line being echoed): `not-loaded` means a bad line or a sandbox applying the rule to every process; say which is likely and offer Readable. Record the answer as DEC-003 and in the `CLAUDE.md` Secrets section.
 4. Nothing else in this shared file: no hooks, no `model` or `fallbackModel` (per user, see `/setup-check`), no `allow` rules. Personal settings go in `.claude/settings.local.json`.
 
 Add to `wiki/claude-code.md` the line teammates run once after trusting the folder: `claude plugin install <id> --scope project` (the setting enables the plugin; it does not install it).
@@ -94,4 +94,4 @@ From the project root run `bash "${CLAUDE_SKILL_DIR}/scripts/verify.sh"` and sho
 
 ## Gate out
 
-Show the user the file tree, the skills generated with one line each, the agent roster, the variable names expecting keys, the key-reads choice (DEC-003) and the on-demand pages. Ask for confirmation. On confirmation, append `## [date] phase | Foundation complete` to the log and give the next command: `/3-design` with an interface, `/4-build` without.
+Show the file tree, the generated skills (one line each), the roster, the key variable names, the key-reads choice (DEC-003) and the on-demand pages. Ask for confirmation. On confirmation, append `## [date] phase | Foundation complete` to the log and give the next command: `/3-design` with an interface, `/4-build` without.

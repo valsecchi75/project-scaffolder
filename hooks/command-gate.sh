@@ -12,12 +12,15 @@
 #   /5-release, /task, /milestone-plan, /milestone-close, /fix-bug, /improve
 #                              need phase 4 (build) or later
 #
-# On top of the phase, two gate facts, read by the same script as
+# On top of the phase, the gate facts, judged by the same script as
 # /phase-status (phase-status.sh --facts), so the two never disagree:
-#   /2-foundation from brainstorm   the brief says status: approved
-#                                   (--upgrade passes: it migrates a v3 project)
-#   /4-build from foundation/design the log has "phase | Design complete",
-#                                   or the brief says has_interface: no
+#   /2-foundation from brainstorm     the brief says status: approved
+#                                     (a v3 project to --upgrade has no phase
+#                                      file, so it passes above)
+#   /3-design, /4-build from foundation  "phase | Foundation complete" logged
+#   /4-build from foundation/design   the design phase closed (registry clean
+#                                     and "phase | Design complete"), or the
+#                                     brief says has_interface: no
 #
 # Going back is always allowed. No .scaffolder/phase file, an unknown phase
 # word or a command of another plugin: pass through silently. Fails open (no
@@ -53,24 +56,24 @@ block() { printf '{"decision":"block","reason":"project-scaffolder: %s /phase-st
   "${CMD#project-scaffolder:}" "$NEED" "$NEEDNAME" "$N" "$PHASE" "$NEXT")"
 
 # Gate facts (phase-status.sh --facts): only for the step forward they guard.
+# The values are the script's fixed words; tr keeps the reason JSON-safe anyway.
 fact() { printf '%s\n' "$FACTS" | sed -n "s/^$1=//p" | head -n 1 | tr -cd 'a-z'; }
 case "$CMD:$N" in
-  project-scaffolder:2-foundation:1)
-    case "$(ps_field "$INPUT" command_args)" in *--upgrade*) exit 0 ;; esac ;;
-  project-scaffolder:4-build:2|project-scaffolder:4-build:3) ;;
+  project-scaffolder:2-foundation:1|project-scaffolder:3-design:2|project-scaffolder:4-build:2|project-scaffolder:4-build:3) ;;
   *) exit 0 ;;
 esac
 FACTS=$(bash "$(dirname "$0")/../skills/phase-flow/scripts/phase-status.sh" --facts "$PS_PROJECT" 2>/dev/null)
 [ -n "$FACTS" ] || exit 0
 
+case "$CMD:$N" in
+  project-scaffolder:2-foundation:1)
+    [ "$(fact brief)" = approved ] || block "/2-foundation needs an approved brief, and docs/brief/BRIEF.md is $(fact brief) (its status must read approved). Finish /1-brainstorm: the brief is approved only when you say so." ;;
+  *:2)
+    [ "$(fact foundation)" = complete ] || block "/${CMD#project-scaffolder:} needs the foundation closed: the line phase | Foundation complete in wiki/log.md, written when you confirm the structure check. Finish /2-foundation first." ;;
+esac
 case "$CMD" in
-  project-scaffolder:2-foundation)
-    B=$(fact brief)
-    [ "$B" = approved ] || block "/2-foundation needs an approved brief, and docs/brief/BRIEF.md says status: ${B:-none}. Finish /1-brainstorm: the brief is approved only when you say so."
-    ;;
   project-scaffolder:4-build)
     [ "$(fact design)" = complete ] || [ "$(fact interface)" = no ] \
-      || block "/4-build needs the design phase closed (the line phase | Design complete in wiki/log.md), or a brief with has_interface: no. Run /3-design until every section is approved and you close the phase."
-    ;;
+      || block "/4-build needs the design phase closed (every section approved in wiki/design/registry.md and the line phase | Design complete in wiki/log.md), or a brief with has_interface: no. Run /3-design until you close the phase." ;;
 esac
 exit 0

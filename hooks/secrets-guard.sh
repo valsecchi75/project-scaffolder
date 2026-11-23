@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # PreToolUse guard for the secrets/ folder (project-scaffolder v4).
 # Contract: secrets/ holds hand-over files with API keys. Commands load them
-# locally (set -a; . secrets/x.env; set +a; cmd); whether Claude may also
+# locally (set -a; . secrets/x.env 2>/dev/null; set +a; cmd); whether Claude may also
 # read them is the project's DEC-003. Nothing in there may ever be published:
 # not to git, not to an Artifact, not copied into wiki, docs, logs or code,
 # not inlined in a shell command (commands end up in transcripts and logs),
@@ -90,7 +90,7 @@ case "$TOOL" in
     CMD=$(ps_field "$INPUT" command)
 
     if printf '%s' "$CMD" | ps_has_secret; then
-      ps_deny "project-scaffolder: this command contains a value from secrets/$(ps_where "$CMD"). Commands are recorded in transcripts and logs. Load the value from its file instead (for example: set -a; . secrets/<file>.env; set +a) and reference the variable."
+      ps_deny "project-scaffolder: this command contains a value from secrets/$(ps_where "$CMD"). Commands are recorded in transcripts and logs. Load the value from its file instead (for example: set -a; . secrets/<file>.env 2>/dev/null; set +a) and reference the variable."
     fi
 
     if printf '%s' "$CMD" | grep -qE 'git[[:space:]]+(add|commit|push)'; then

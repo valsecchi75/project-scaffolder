@@ -36,7 +36,7 @@ Measured on the plugin itself, 4.0.0 against 4.1.0 (tokens estimated as bytes / 
 | Model switch when a command starts (full uncached re-read of the conversation) | 18 commands | **none** |
 | `/phase-status` | 1,834 tokens | **345 tokens (−81%)** — a script reads the files |
 | Status, statistics and wiki checks | read by the model | counted by bundled scripts, short output |
-| Hook and script regression tests | 57 | **217** |
+| Hook and script regression tests | 57 | **231** |
 | Behaviour evals of the gates (`claude plugin eval`) | — | 3 cases |
 | Quality score on a micro-project, blind Fable review (rubric below) | **57**/100 | **81**/100 |
 
@@ -130,7 +130,7 @@ Each project follows Andrej Karpathy's [LLM-wiki pattern](https://gist.github.co
 
 ## Secrets
 
-`secrets/` holds hand-over files with API keys. The agent may read them to use a key locally; nothing in there is ever published. The secrets guard blocks:
+`secrets/` holds hand-over files with API keys. Commands load them locally (`set -a; . secrets/<file>.env 2>/dev/null; set +a; <command>`); with the recommended phase-2 answer a deny rule blocks Claude's own reads of the folder, so values never reach the transcript. Nothing in there is ever published, and the release gate checks that no value ships in the build. The secrets guard blocks:
 
 - committing while the folder is not git-ignored, or is tracked or staged;
 - a commit whose changes contain a value, and a push while a committed file contains one;
@@ -138,7 +138,7 @@ Each project follows Andrej Karpathy's [LLM-wiki pattern](https://gist.github.co
 - publishing a value or a `secrets/` file as an Artifact — page, supporting files and assets included;
 - sending a value or a `secrets/` file through an MCP connector (GitHub, mail, docs, chat, hosting), a web request, or a message to another or a cloud session.
 
-A value is recognised in `NAME=value` lines, in URLs (`user:password@`, key-like path and query parts), in JSON, Markdown and free text (long key-like tokens), and in PEM or base64 lines; identifiers such as `…_HOST`, `…_REF` or `…_EMAIL`, hostnames and plain URLs are not treated as secrets. Uploading a file from `secrets/` with a shell command asks first; a plain `cp` out of `secrets/` is not parsed, which is why a commit or push re-checks the content. Keys are best loaded inside the command that needs them (`set -a; . secrets/<service>.env; set +a; <command>`), so the value never enters the conversation: anything Claude reads lands in the local session transcript. Phase 2 also offers an opt-in rule that blocks reads of `secrets/` entirely. It is a guard rail, not a data-loss-prevention system.
+A value is recognised in `NAME=value` lines, in URLs (`user:password@`, key-like path and query parts), in JSON, Markdown and free text (long key-like tokens), and in PEM or base64 lines; identifiers such as `…_HOST`, `…_REF` or `…_EMAIL`, hostnames and plain URLs are not treated as secrets. Uploading a file from `secrets/` with a shell command asks first; a plain `cp` out of `secrets/` is not parsed, which is why a commit or push re-checks the content. Keys are best loaded inside the command that needs them (`set -a; . secrets/<service>.env 2>/dev/null; set +a; <command>`), so the value never enters the conversation: anything Claude reads lands in the local session transcript. Phase 2 also offers an opt-in rule that blocks reads of `secrets/` entirely. It is a guard rail, not a data-loss-prevention system.
 
 ## Design
 

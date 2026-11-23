@@ -260,33 +260,58 @@ check "gate, brainstorm: /milestone-plan"    block "$(gate milestone-plan)"
 check "gate, brainstorm: /improve"           block "$(gate improve)"
 check "gate, brainstorm: /research"          allow "$(gate research)"
 check "gate, brainstorm: other plugin /task" allow "$(run command-gate.sh "$(cmd_json other-plugin:task)")"
-# Gate facts (T-001): read through phase-status.sh --facts, the same reading as /phase-status.
+# Gate facts (T-001): judged by phase-status.sh --facts, the same reading as /phase-status.
+gok() { if [ "$2" -eq 0 ]; then PASS=$((PASS + 1)); else FAIL=$((FAIL + 1)); echo "FAIL  command-gate: $1"; fi; }
 brief() { mkdir -p "$PROJ/docs/brief"; printf -- '---\nstatus: %s\napproved:\nhas_interface: %s\n---\n' "$1" "$2" > "$PROJ/docs/brief/BRIEF.md"; }
+logl() { mkdir -p "$PROJ/wiki"; printf '## [2026-11-23] phase | %s\r\n' "$@" > "$PROJ/wiki/log.md"; }
+reg() {  # section status
+  mkdir -p "$PROJ/wiki/design"
+  printf '## Design system\n\n| Name | Version | Link | Approved by | Date |\n|---|---|---|---|---|\n| Base | 1 | design/system | user | 2026-11-23 |\n\n## Sections\n\n| # | Section | Feature | Status |\n|---|---|---|---|\n| 1 | Home | start | %s |\n' "$1" > "$PROJ/wiki/design/registry.md"
+}
 upg_json() { printf '{"cwd":"%s","hook_event_name":"UserPromptExpansion","command_name":"project-scaffolder:2-foundation","command_args":"--upgrade"}' "$JSON_ROOT"; }
+facts() { bash "$HOOKS/../skills/phase-flow/scripts/phase-status.sh" --facts "$PROJ"; }
 check "gate, brainstorm: /2-foundation, no brief"     block "$(gate 2-foundation)"
 brief draft '{yes|no}'
 check "gate, brainstorm: /2-foundation, draft brief"  block "$(gate 2-foundation)"
-check "gate, brainstorm: /2-foundation --upgrade"     allow "$(run command-gate.sh "$(upg_json)")"
+check "gate, brainstorm: --upgrade is no way around"  block "$(run command-gate.sh "$(upg_json)")"
 OUT="$(gate 2-foundation)"
-if printf '%s' "$OUT" | grep -q 'needs an approved brief.*status: draft' && printf '%s' "$OUT" | valid_json; then
-  PASS=$((PASS + 1)); else FAIL=$((FAIL + 1)); echo "FAIL  command-gate: the brief reason must name the status, as valid JSON"; fi
-brief approved yes
-check "gate, brainstorm: /2-foundation, approved"     allow "$(gate 2-foundation)"
+if printf '%s' "$OUT" | grep -q 'needs an approved brief.*is draft' && printf '%s' "$OUT" | valid_json; then
+  PASS=$((PASS + 1)); else FAIL=$((FAIL + 1)); echo "FAIL  command-gate: the brief reason must name the state, as valid JSON"; fi
+brief 'approved (2026-11-23)' yes
+check "gate, brainstorm: status with a suffix"        block "$(gate 2-foundation)"
+bash "$HOOKS/../skills/phase-flow/scripts/phase-status.sh" "$PROJ" | grep -q '^next: /1-brainstorm'
+gok "phase-status agrees: a suffixed status is not approved" $?
+brief '"approved"' '"yes"'
+check "gate, brainstorm: quoted approved"             allow "$(gate 2-foundation)"
+bash "$HOOKS/../skills/phase-flow/scripts/phase-status.sh" "$PROJ" | grep -q '^next: /clear brainstorm, then /2-foundation$'
+gok "phase-status agrees: a quoted approved is approved" $?
 echo foundation > "$PROJ/.scaffolder/phase"
-check "gate, foundation: /3-design"          allow "$(gate 3-design)"
-check "gate, foundation: /4-build with a UI" block "$(gate 4-build)"
+check "gate, foundation open: /3-design"              block "$(gate 3-design)"
 brief approved no
-check "gate, foundation: /4-build (no UI)"   allow "$(gate 4-build)"
-check "gate, foundation: /5-release"         block "$(gate 5-release)"
-check "gate, foundation: /milestone-close"   block "$(gate milestone-close)"
-echo design > "$PROJ/.scaffolder/phase"
+check "gate, foundation open: /4-build (no UI)"       block "$(gate 4-build)"
+logl 'Foundation complete'
+check "gate, foundation closed: /4-build (no UI)"     allow "$(gate 4-build)"
 brief approved yes
-check "gate, design: /4-build, design open"  block "$(gate 4-build)"
-mkdir -p "$PROJ/wiki"; printf '## [2026-11-23] phase | Design complete\r\n' > "$PROJ/wiki/log.md"
-check "gate, design: /4-build, design closed" allow "$(gate 4-build)"
-OUT="$(bash "$HOOKS/../skills/phase-flow/scripts/phase-status.sh" --facts "$PROJ")"
-[ "$OUT" = "$(printf 'phase=design\nbrief=approved\ninterface=yes\ndesign=complete')" ] && PASS=$((PASS + 1)) \
-  || { FAIL=$((FAIL + 1)); echo "FAIL  phase-status --facts: unexpected output: $OUT"; }
+check "gate, foundation closed: /3-design"            allow "$(gate 3-design)"
+check "gate, foundation closed: /4-build with a UI"   block "$(gate 4-build)"
+check "gate, foundation: /5-release"                  block "$(gate 5-release)"
+check "gate, foundation: /milestone-close"            block "$(gate milestone-close)"
+echo design > "$PROJ/.scaffolder/phase"
+check "gate, design: /4-build, design open"           block "$(gate 4-build)"
+logl 'Foundation complete' 'Design complete'
+check "gate, design: logged but no registry"          block "$(gate 4-build)"
+reg 'approved'
+check "gate, design: /4-build, design closed"         allow "$(gate 4-build)"
+[ "$(facts)" = "$(printf 'phase=design\nbrief=approved\ninterface=yes\nfoundation=complete\ndesign=complete')" ]
+gok "phase-status --facts: exact verdicts" $?
+reg 'changed'
+check "gate, design: a section reopened"              block "$(gate 4-build)"
+# Fails open: without the facts script only the phase check remains.
+GO="$TMP/gateonly/hooks"; mkdir -p "$GO"; cp "$HOOKS/command-gate.sh" "$HOOKS/lib.sh" "$GO/"
+echo brainstorm > "$PROJ/.scaffolder/phase"; brief draft yes
+check "gate without phase-status.sh: fact gate open"  allow "$(printf '%s' "$(cmd_json project-scaffolder:2-foundation)" | CLAUDE_PROJECT_DIR="$NATIVE" bash "$GO/command-gate.sh")"
+check "gate without phase-status.sh: phase still held" block "$(printf '%s' "$(cmd_json project-scaffolder:5-release)" | CLAUDE_PROJECT_DIR="$NATIVE" bash "$GO/command-gate.sh")"
+echo design > "$PROJ/.scaffolder/phase"
 rm -rf "$PROJ/docs" "$PROJ/wiki"
 check "gate, design: /fix-bug"               block "$(gate fix-bug)"
 check "gate, design: /task"                  block "$(gate task)"
@@ -592,18 +617,28 @@ bash "$SK/design-studio/scripts/contrast.sh" --self-test >/dev/null; sok "contra
 
 # T-003: the release gate scans what ships with the guard's own secret map.
 BS="$SK/release/scripts/build-secrets.sh"; BP="$TMP/shipped"
-mkdir -p "$BP/dist/assets" "$BP/secrets"
+mkdir -p "$BP/.scaffolder" "$BP/dist/assets" "$BP/secrets" "$BP/app/src"; echo release > "$BP/.scaffolder/phase"
 printf 'console.log("hi")\n' > "$BP/dist/assets/app.js"
-bash "$BS" --project "$BP" dist >/dev/null; [ $? -eq 0 ]; sok "build-secrets: no secrets/ values, exit 0" $?
+bsc() { (cd "$BP${2:-}" && bash "$BS" $1); }   # paths, subfolder to run from
+bsc dist >/dev/null; [ $? -eq 0 ]; sok "build-secrets: no key file, no key expected, exit 0" $?
 printf 'VITE_MAPS_KEY=%s\n' "$KEY" > "$BP/secrets/maps.env"
-OUT="$(bash "$BS" --project "$BP" dist)"; RC=$?
+OUT="$(bsc dist)"; RC=$?
 [ $RC -eq 0 ] && printf '%s' "$OUT" | grep -q '^build-secrets: clean (1 values'; sok "build-secrets: clean bundle" $?
+OUT="$(bsc dist /app/src)"; RC=$?
+[ $RC -eq 0 ] && printf '%s' "$OUT" | grep -q '^build-secrets: clean'; sok "build-secrets: run from a subfolder finds the project" $?
 printf 'const k="%s";\n' "$KEY" > "$BP/dist/assets/index-abc123.js"
-OUT="$(bash "$BS" --project "$BP" dist)"; RC=$?
+OUT="$(bsc dist)"; RC=$?
 [ $RC -eq 1 ] && printf '%s' "$OUT" | grep -q '^leak: dist/assets/index-abc123.js (maps.env VITE_MAPS_KEY)$' \
   && ! printf '%s' "$OUT" | grep -qF "$KEY"; sok "build-secrets: a key in the bundle is named by file and variable, never shown" $?
-bash "$BS" --project "$BP" build >/dev/null; [ $? -eq 2 ]; sok "build-secrets: nothing built yet, exit 2" $?
-bash "$BS" --project "$BP" >/dev/null; [ $? -eq 2 ]; sok "build-secrets: no path given, exit 2" $?
+bsc build >/dev/null; [ $? -eq 2 ]; sok "build-secrets: nothing built yet, exit 2" $?
+bsc "" >/dev/null; [ $? -eq 2 ]; sok "build-secrets: no path given, exit 2" $?
+bsc secrets >/dev/null; [ $? -eq 2 ]; sok "build-secrets: secrets/ itself is refused as output" $?
+bsc "$TMP" >/dev/null; [ $? -eq 2 ]; sok "build-secrets: a path outside the project is refused" $?
+printf 'K\000=\000v\000' > "$BP/secrets/u16.env"
+OUT="$(bsc dist)"; RC=$?
+[ $RC -eq 2 ] && printf '%s' "$OUT" | grep -q 'NOT CHECKED.*u16.env'; sok "build-secrets: a UTF-16 key file is not checked, never clean" $?
+rm -rf "$BP/secrets"; printf 'MAPS_KEY=\n' > "$BP/.env.example"
+bsc dist >/dev/null; [ $? -eq 2 ]; sok "build-secrets: keys expected, no secrets/ folder, exit 2" $?
 
 echo "hooks: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ]

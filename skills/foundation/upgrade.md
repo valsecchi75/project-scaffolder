@@ -1,6 +1,6 @@
 # Upgrading a v3 project (`/2-foundation --upgrade`)
 
-A v3 project has `CLAUDE.md`, the wiki and `skills/` but no `.scaffolder/phase`. Show the plan below, wait for confirmation, then apply it. Templates are in this skill's `templates/` folder; "step N" means the step of that number under **Generate** in the foundation SKILL.md.
+A v3 project has `CLAUDE.md`, the wiki and `skills/` but no `.scaffolder/phase`. If `.scaffolder/phase` exists, stop: the project already follows the phase flow, and `--upgrade` would skip its gates; run `/phase-status` instead. Show the plan below, wait for confirmation, then apply it. Templates are in this skill's `templates/` folder; "step N" means the step of that number under **Generate** in the foundation SKILL.md.
 
 1. `.scaffolder/phase` ← `build` (the project is already in development). If there is no `docs/brief/BRIEF.md`, derive one from `wiki/overview.md` and the design spec, mark it `status: approved` with a note that it was reconstructed, and ask the user to confirm it.
 2. Move `skills/<name>/` to `.claude/skills/<name>/` with `git mv`; move `skills/_synapse-map.md` to `wiki/skills-map.md`. Then write the code map, `.claude/skills/project-overview/SKILL.md`, from `templates/project-overview.md`: take the directories from `git ls-files | cut -d/ -f1-2 | sort -u`, open each entry point before naming it, and leave out what the tree does not show. Add it to `wiki/skills-map.md`.

@@ -65,7 +65,7 @@ None yet: the platform is decided in phase 4, which then writes here the exact c
 ## Secrets
 
 - `secrets/` holds the key files. It is git-ignored and never published; the secrets guard blocks leaks.
-- Use a key by loading its file inside the command that needs it: `set -a; . secrets/<service>.env; set +a; <command>`. The value never enters the conversation.
+- Use a key by loading its file inside the command that needs it: `set -a; . secrets/<service>.env 2>/dev/null; set +a; <command>`. The value never enters the conversation.
 - Anything read from `secrets/` with Read or `cat` lands in the session transcript. Read a key file only when loading it in the shell cannot work. Reads of `secrets/` here: {allowed|blocked by a deny rule} (DEC-003).
 - Never copy a value into chat, wiki, docs, logs, code, commits or Artifacts; refer to it by variable name.
 

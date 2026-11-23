@@ -75,6 +75,18 @@ while IFS= read -r f; do
 done < <(find "$SECRETS" -type f ! -iname 'README.md' 2>/dev/null)
 [ -z "$BAD" ] || notrun "cannot read these key files as text:$BAD. Save them as UTF-8 under 256 KiB, or run this in your own terminal (a sandbox may block reads)"
 
+# Every key .env.example names must have its line in secrets/. This catches a
+# file a sandbox hides however it hides it (empty, missing, an empty folder),
+# and a key not handed over yet: either way the scan would look for nothing.
+MISSING=""
+if [ -f .env.example ]; then
+  for n in $(sed -n -E 's/^[[:space:]]*(export[[:space:]]+)?([A-Za-z_][A-Za-z0-9_]*)=.*/\2/p' .env.example | tr -d '\r'); do
+    grep -rqsE --exclude='[Rr][Ee][Aa][Dd][Mm][Ee].md' "^[[:space:]]*(export[[:space:]]+)?[\"']?$n[\"']?[[:space:]]*[=:]" -- "$SECRETS" \
+      || MISSING="$MISSING $n"
+  done
+fi
+[ -z "$MISSING" ] || notrun ".env.example names keys with no line in secrets/:$MISSING (not handed over yet, or hidden by a sandbox: run this in your own terminal). Drop the key files in, or remove names the product does not use"
+
 MAP=$(ps_secret_map)
 VALUES=$(printf '%s\n' "$MAP" | cut -f1 | grep -v '^$')
 [ -n "$VALUES" ] || { echo "build-secrets: secrets/ holds no value recognised as a key: nothing to check"; exit 0; }

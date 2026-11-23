@@ -198,3 +198,11 @@
 **Choice:** B.
 **Why:** every phase command loads `phase-flow` plus its phase skill; the duplicated dispatch blocks and once-only steps were paid on every run and every resume.
 **Consequences:** measure = bytes / 4 of the command, `phase-flow/SKILL.md` and the phase skill at the committed version (the method that reproduces the judge's figures). `/task`, `/milestone-plan` and `/milestone-close` now load `phase-flow` too, unless the session already has it. A change that pushes a phase command past ~4.5k moves text out, not in.
+
+## DEC-026: The build scan checks names, and a sandboxed run is a first look only
+
+**Date:** 2026-11-23 · **Status:** [DECISION] (v4.1.2, T-008) · **Refines:** DEC-023
+**Options:** A — trust the in-session scan once it reads every key file as text · B — also require every key `.env.example` names to have its line in `secrets/`, and, with the Bash sandbox on and reads blocked, take the verdict from the user's own terminal.
+**Choice:** B.
+**Why:** the sandbox docs (code.claude.com/docs/en/sandboxing) say Read deny rules reach every process a sandboxed command starts, but not how a denied file looks to it. Empty, missing or unreadable files are now refused by the scan; a stand-in copy could not be told apart from a real file, so only a run outside the sandbox settles it. Native Windows has no sandbox, and hooks run outside it, so the guard always sees the real values.
+**Consequences:** a key named in `.env.example` but not handed over makes the scan answer NOT CHECKED: the user drops the file in or removes the unused name. Tested in a git worktree (main checkout's `secrets/`) and with an emptied or removed key file.

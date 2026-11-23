@@ -49,3 +49,6 @@ T-001 to T-007 of `wiki/todo.md`: fact gates for `/2-foundation` and `/4-build`,
 
 ## [2026-11-23] review | Fable 5.2 review of v4.1.1
 SHIP AFTER FIXES, no CRITICAL. Fixed: build-secrets.sh found the project from the current folder only and passed "clean" when it had not checked (HIGH); it now finds the root, takes a worktree's secrets/ from the main checkout, refuses paths outside the project or inside secrets/, and answers NOT CHECKED for unreadable, UTF-16 or large key files. Gate: no --upgrade exemption, foundation closed required for /3-design and /4-build, design closed means registry clean plus log line, brief values compared exactly in report and gate. Loading command with 2>/dev/null and a variable check. Design-studio reads entry.md in Local-mode sessions. README, capabilities card, CHANGELOG aligned. Open: T-008.
+
+## [2026-11-23] fix | T-008, v4.1.2 (prepared)
+Build scan tested in a worktree and with a masked key file; `.env.example` names cross-checked against `secrets/`; sandbox behaviour checked in the docs (Read deny reaches child processes on macOS, Linux, WSL2; native Windows unsandboxed; hooks outside; a denied file's appearance undocumented), so a sandboxed release takes the verdict from the user's terminal. DEC-026.

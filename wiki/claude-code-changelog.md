@@ -44,6 +44,7 @@ Impact: `adopt` (use it now) · `adapt` (change the plugin) · `watch` (may matt
 | PreToolUse `permissionDecision: deny \| ask` | guards | docs + `tests/test-hooks.sh` |
 | Marketplace `dependencies` with `allowCrossMarketplaceDependenciesOn` | `.claude-plugin/marketplace.json` | docs; install behaviour when a dependency's marketplace is not added: not verified |
 | Artifact `quickstart` with `intent: "design"` / `"other"`, Design and Design System types | `skills/design-studio` | tool description, 2026-11-23 |
+| Bash sandbox: macOS, Linux, WSL2 only (native Windows unsandboxed); `Read` deny rules merge into it and reach the command's child processes; hooks run outside it; how a denied file looks to a process is not documented | `skills/release` (build scan), `skills/foundation` (key reads) | docs https://code.claude.com/docs/en/sandboxing, 2026-11-23 |
 
 ## Known operational limits
 

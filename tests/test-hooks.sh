@@ -640,5 +640,27 @@ OUT="$(bsc dist)"; RC=$?
 rm -rf "$BP/secrets"; printf 'MAPS_KEY=\n' > "$BP/.env.example"
 bsc dist >/dev/null; [ $? -eq 2 ]; sok "build-secrets: keys expected, no secrets/ folder, exit 2" $?
 
+# T-008: a worktree has no secrets/ (git-ignored), so the main checkout's is
+# used; a key file a sandbox masks (empty or gone) is "not checked", never clean.
+WP="$TMP/wtmain"; mkdir -p "$WP/.scaffolder" "$WP/secrets"
+git -C "$WP" init -q; echo build > "$WP/.scaffolder/phase"; printf 'secrets/\ndist/\n.claude/\n' > "$WP/.gitignore"
+printf 'VITE_MAPS_KEY=   # secrets/maps.env\n' > "$WP/.env.example"
+git -C "$WP" -c core.autocrlf=false add -A && git -C "$WP" -c user.name=t -c user.email=t@example.invalid commit -qm init
+printf "VITE_MAPS_KEY='%s'\n" "$KEY" > "$WP/secrets/maps.env"
+git -C "$WP" worktree add -q "$WP/.claude/worktrees/w1" 2>/dev/null
+WT1="$WP/.claude/worktrees/w1"; mkdir -p "$WT1/dist"; printf 'k="%s"' "$KEY" > "$WT1/dist/a.js"
+OUT="$(cd "$WT1" && bash "$BS" dist)"; RC=$?
+[ $RC -eq 1 ] && printf '%s' "$OUT" | grep -q '^leak: dist/a.js (maps.env VITE_MAPS_KEY)$' && ! printf '%s' "$OUT" | grep -qF "$KEY"
+sok "build-secrets: a worktree scans with the main checkout's secrets/" $?
+printf 'clean' > "$WT1/dist/a.js"
+OUT="$(cd "$WT1" && bash "$BS" dist)"; RC=$?
+[ $RC -eq 0 ] && printf '%s' "$OUT" | grep -q '^build-secrets: clean'; sok "build-secrets: worktree, clean build" $?
+: > "$WP/secrets/maps.env"
+OUT="$(cd "$WP" && bash "$BS" .claude/worktrees/w1/dist)"; RC=$?
+[ $RC -eq 2 ] && printf '%s' "$OUT" | grep -q 'NOT CHECKED.*VITE_MAPS_KEY'; sok "build-secrets: a key file read as empty (masked) is not checked" $?
+rm -f "$WP/secrets/maps.env"
+OUT="$(cd "$WP" && bash "$BS" .claude/worktrees/w1/dist)"; RC=$?
+[ $RC -eq 2 ] && printf '%s' "$OUT" | grep -q 'NOT CHECKED.*VITE_MAPS_KEY'; sok "build-secrets: a key file gone from secrets/ is not checked" $?
+git -C "$WP" worktree remove --force "$WT1" 2>/dev/null
 echo "hooks: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ]

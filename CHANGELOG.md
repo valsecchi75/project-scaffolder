@@ -5,6 +5,12 @@ All notable changes to the Project Scaffolder plugin are documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 4.1.2 — 2026-11-23
+
+### Fixed
+- **The release build scan cannot be fooled by a hidden key file**: every key `.env.example` names must have its line in `secrets/`, so a key file that is empty, missing or not handed over yet makes the scan answer `NOT CHECKED` instead of clean. With the Bash sandbox on (macOS, Linux, WSL2) and reads of `secrets/` blocked, `/5-release` takes the scan's verdict from a run in your own terminal: the sandbox docs do not say how a denied file looks to a command.
+- `tests/test-hooks.sh`: the scan in a git worktree (it uses the main checkout's `secrets/`) and with an emptied or removed key file.
+
 ## 4.1.1 — 2026-11-23
 
 The open points of the Fable 5.2 review of 4.1.0 (`wiki/todo.md` T-001 to T-007). Existing projects need nothing: the new gates read files they already have.

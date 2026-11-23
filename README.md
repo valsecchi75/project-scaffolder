@@ -36,7 +36,7 @@ Measured on the plugin itself, 4.0.0 against 4.1.0 (tokens estimated as bytes / 
 | Model switch when a command starts (full uncached re-read of the conversation) | 18 commands | **none** |
 | `/phase-status` | 1,834 tokens | **345 tokens (−81%)** — a script reads the files |
 | Status, statistics and wiki checks | read by the model | counted by bundled scripts, short output |
-| Hook and script regression tests | 57 | **231** |
+| Hook and script regression tests | 57 | **235** |
 | Behaviour evals of the gates (`claude plugin eval`) | — | 3 cases |
 | Quality score on a micro-project, blind Fable review (rubric below) | **57**/100 | **81**/100 |
 

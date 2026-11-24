@@ -662,5 +662,26 @@ rm -f "$WP/secrets/maps.env"
 OUT="$(cd "$WP" && bash "$BS" .claude/worktrees/w1/dist)"; RC=$?
 [ $RC -eq 2 ] && printf '%s' "$OUT" | grep -q 'NOT CHECKED.*VITE_MAPS_KEY'; sok "build-secrets: a key file gone from secrets/ is not checked" $?
 git -C "$WP" worktree remove --force "$WT1" 2>/dev/null
+
+# ------------------------------------------------------- improve loop paths
+# The loop's protected paths live in the workflow script and in the skill
+# (the fallback reads the skill): they must agree, and the script's own check
+# must refuse the approval policy (Claude Approvals) like the settings files.
+WF="$HOOKS/../workflows/improve-segment.js"; IL="$SK/improve-loop/SKILL.md"
+missing=""
+for p in $(sed -n '/^const PROTECTED = \[/,/\]/p' "$WF" | grep -oE "'[^']+'" | tr -d "'"); do
+  case "$p" in secrets/) continue ;; esac   # the skill names it "any secrets/ folder"
+  grep -qF "\`$p\`" "$IL" || missing="$missing $p"
+done
+[ -z "$missing" ]; sok "improve loop: every protected path of the script is in the skill (missing:${missing:- none})" $?
+if command -v node >/dev/null 2>&1; then
+  { echo 'const SCOPE = []'; sed -n '/^const PROTECTED = \[/,/\]/p; /^const PROTECTED_ANY = /p; /^const norm = /p; /^const allowed = /,/^$/p' "$WF"
+    echo 'const bs = String.fromCharCode(92)   // a Windows path, without a backslash in this file'
+    echo 'const no = [".claude/approvals.yml", "./.claude/approvals.yml", ".claude" + bs + "classifiers" + bs + "risky.md", ".claude/settings.json", "secrets/a.env", "app/.env.local"]'
+    echo 'const yes = ["src/app.js", ".claude/skills/app-domain/SKILL.md", ".env.example", "docs/approvals.yml"]'
+    echo 'process.exit(no.every(p => !allowed(p)) && yes.every(p => allowed(p)) ? 0 : 1)'; } > "$TMP/allowed.js"
+  node "$TMP/allowed.js"; sok "improve loop: the script refuses the approval policy, keeps ordinary files" $?
+fi
+
 echo "hooks: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ]

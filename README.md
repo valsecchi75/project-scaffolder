@@ -36,7 +36,7 @@ Measured on the plugin itself, 4.0.0 against 4.1.0 (tokens estimated as bytes / 
 | Model switch when a command starts (full uncached re-read of the conversation) | 18 commands | **none** |
 | `/phase-status` | 1,834 tokens | **345 tokens (−81%)** — a script reads the files |
 | Status, statistics and wiki checks | read by the model | counted by bundled scripts, short output |
-| Hook and script regression tests | 57 | **235** |
+| Hook and script regression tests | 57 | **237** |
 | Behaviour evals of the gates (`claude plugin eval`) | — | 3 cases |
 | Quality score on a micro-project, blind Fable review (rubric below) | **57**/100 | **81**/100 |
 
@@ -64,7 +64,7 @@ Requirements: Claude Code 2.1.323 or later, and bash (Git Bash on Windows) for t
 | 2 | `/2-foundation` | The project's second brain: `raw/` sources, the wiki, the `CLAUDE.md` schema, path-scoped rules, project skills, the agent roster, a `secrets/` folder. | Structure check green, your confirmation |
 | 3 | `/3-design` | Design system first. Then each section as artboards (all states, all viewports), an anti-slop audit and a measured contrast and type check, your approval, and one Artifact page per section (a self-contained local page when the Artifact tool is unavailable). | Every section approved in `wiki/design/registry.md` |
 | 4 | `/4-build` | Platform decision (you choose), milestone plans, then `/task` for each activity: plan → build → verify → bug hunt → persona test. `/improve` between milestones. | Milestones closed with evidence |
-| 5 | `/5-release` | A green full test run, then 1, 5, 10 or 100 verification rounds as you choose, fixes, the release gate, version, changelog, tag. Never pushes. | Release report approved, tag created |
+| 5 | `/5-release` | A green full test run, then 1, 5, 10 or 100 verification rounds as you choose, fixes, the release gate, version, changelog, tag. Never pushes: on GitHub it names Claude Code's `/ship` for you to type. | Release report approved, tag created |
 
 **The gates are mechanical, not just advice.** `.scaffolder/phase` records the current phase. A hook refuses writes that belong to a later phase (in phase 1 only the brief and `raw/`; in phases 2 and 3 no application code), and another refuses a phase or build command typed too early, before it loads: also `/2-foundation` before you approve the brief and `/4-build` before you close the design phase. Interaction modes (Normal, Autopilot, Autonomous) apply from phase 4 and never skip a gate.
 
@@ -192,7 +192,7 @@ Approved sections are saved as Artifact pages, one per section, linked from the 
 ## Upgrading
 
 - **From 4.0:** projects keep working; `/4-build` writes the new `verify` skill when it is missing. Path-scoped rules, the code map and the shared settings come with new projects; copy them from `skills/foundation/templates/` if you want them in an existing one.
-- **From v3:** a breaking change, the 19 v3 commands are replaced. Open a v3 project and the session start tells you; `/2-foundation --upgrade` adds the phase state, moves project skills to `.claude/skills/`, renames Execution Docs to milestone plans, creates `raw/`, `secrets/` and the agent roster, and removes the duplicated hook entries after asking.
+- **From v3:** a breaking change, the 19 v3 commands are replaced. Step by step, with the command map: [UPGRADING.md](UPGRADING.md). Open a v3 project and the session start tells you; `/2-foundation --upgrade` adds the phase state, moves project skills to `.claude/skills/`, renames Execution Docs to milestone plans, creates `raw/`, `secrets/` and the agent roster, and removes the duplicated hook entries after asking.
 
 ## Development
 

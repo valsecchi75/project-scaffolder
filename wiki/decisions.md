@@ -206,3 +206,11 @@
 **Choice:** B.
 **Why:** the sandbox docs (code.claude.com/docs/en/sandboxing) say Read deny rules reach every process a sandboxed command starts, but not how a denied file looks to it. Empty, missing or unreadable files are now refused by the scan; a stand-in copy could not be told apart from a real file, so only a run outside the sandbox settles it. Native Windows has no sandbox, and hooks run outside it, so the guard always sees the real values.
 **Consequences:** a key named in `.env.example` but not handed over makes the scan answer NOT CHECKED: the user drops the file in or removes the unused name. Tested in a git worktree (main checkout's `secrets/`) and with an emptied or removed key file.
+
+## DEC-027: Claude Ship is named, never started; the approval policy is out of the loop's reach
+
+**Date:** 2026-11-24 · **Status:** [DECISION] (v4.1.3)
+**Options:** A — ignore Claude Ship (`/ship`, `/steward`, PR Steward, Claude Approvals) · B — the plugin names `/ship` where the user pushes and protects the approval policy, without generating or starting anything · C — `/5-release` runs `/ship` and `/2-foundation` generates `.claude/approvals.yml` and a steward skill.
+**Choice:** B.
+**Why:** `/ship` can only be typed by the user and pushes without a confirmation prompt, which fits "the plugin never pushes" only as a named next step. An approval policy decides what merges without a human: an `/improve` iteration must not be able to edit it, like the settings and hooks. C needs Team or Enterprise, is billed per token and is a team decision, not a scaffold default.
+**Consequences:** `.claude/approvals.yml` and `.claude/classifiers/` join the protected paths in `workflows/improve-segment.js` and the improve-loop skill (a test keeps the two lists in agreement and runs the script's path check). `/5-release` step 6 says the tag is recreated on the merged commit where the repository squashes or rebases. `/setup-check` item 11 says when `/ship` is usable. Not documented by Anthropic and left to watch: whether a cloud PR Steward session loads the repository's plugins and hooks; `secrets/` is git-ignored, so it never reaches the cloud either way.

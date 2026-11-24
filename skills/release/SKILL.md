@@ -53,7 +53,7 @@ Show the user the report: what ships, the gate output, the findings fixed and de
 2. Add the `CHANGELOG.md` entry, grouped Added / Changed / Fixed / Security, written for the product's users.
 3. Commit `release: v<version>` and create the annotated tag `v<version>`.
 4. Log `## [date] release | v<version>` and mark the milestones as released in the roadmap.
-5. Report the next actions that belong to the user: push, store submission, deploy. Do them only if the user asks.
+5. Report the next actions that belong to the user: push, store submission, deploy. Do them only if the user asks. On a github.com repository that merges through pull requests, name `/ship` as the way to push: the user types it in a terminal session (Claude never starts it; Claude Code 2.1.330+, `gh` 2.63+), and it commits, pushes, opens the pull request, reviews it and watches its checks without a confirmation prompt; the user merges. The tag stays local until then: where the repository squashes or rebases, the tagged commit never reaches the default branch, so after the merge the tag is recreated on the merged commit, then pushed.
 
 ## Gate out
 

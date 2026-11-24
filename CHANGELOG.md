@@ -5,6 +5,20 @@ All notable changes to the Project Scaffolder plugin are documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 4.1.3 — 2026-11-24
+
+Claude Ship (Claude Code's `/ship`, PR Steward and Claude Approvals, announced 2026-11-23) reviewed for the flow. The plugin still never pushes and starts none of it.
+
+### Added
+- **`/5-release` names `/ship`** among the actions that are yours after the tag, for github.com repositories that merge through pull requests: you type it in a terminal session and it commits, pushes, opens the pull request, reviews it and watches its checks; you merge. Where the repository squashes or rebases, the tag is recreated on the merged commit before it is pushed.
+- **[UPGRADING.md](UPGRADING.md)**: moving a v3 project to v4, step by step, with the v3 to v4 command map.
+- **`/setup-check`** says when `/ship` is usable (Claude Code 2.1.330+, `gh` 2.63+, a github.com remote, a terminal session) and notes a Claude Approvals policy when the project has one.
+
+### Changed
+- **`/improve` never edits the pull-request approval policy**: `.claude/approvals.yml` and `.claude/classifiers/` join the protected paths, like the settings files and hooks. An edit there can let changes merge unreviewed, so it is your decision, not an iteration.
+- **`/2-foundation --upgrade` needs no extra prompt**: it checks for uncommitted work and work in progress before changing anything, creates the notebook `wiki/todo.md`, and writes the command map and the new rules into `wiki/handoff.md`, so later sessions start from the v4 flow.
+- `tests/test-hooks.sh` (237 cases): the loop's protected paths agree between the workflow script and the skill, and the script's path check is run on the approval policy.
+
 ## 4.1.2 — 2026-11-23
 
 ### Fixed

@@ -31,9 +31,11 @@ const MAX_LINES = Math.max(10, Math.min(300, A.maxLines || 150))
 // agentsLeft is what the journal's agent-cap leaves: 0 means spent, never "use the default".
 const AGENT_CAP = Math.min(900, typeof A.agentsLeft === 'number' ? A.agentsLeft : 3 * (END - A.start + 1) + 1)
 if (AGENT_CAP < 4) return { status: 'agent-cap', next: A.start, tip: A.tip, agents: 0, kept: [], iterations: [], worktrees: [] }
-// Root paths the loop never changes, including its own permissions, hooks and MCP servers.
+// Root paths the loop never changes, including its own permissions, hooks and MCP servers, and the
+// pull-request approval policy (Claude Approvals): an edit there can let changes merge unreviewed.
 const PROTECTED = ['secrets/', 'raw/', 'docs/brief/', '.scaffolder/', 'logs/', 'wiki/log.md', 'wiki/product/decisions.md',
-  '.claude/settings.json', '.claude/settings.local.json', '.claude/hooks/', '.mcp.json']
+  '.claude/settings.json', '.claude/settings.local.json', '.claude/hooks/', '.mcp.json',
+  '.claude/approvals.yml', '.claude/classifiers/']
 // At any depth: a secrets/ folder and .env files (.env.example stays editable), as in hooks/secrets-guard.sh, plus .envrc.
 const PROTECTED_ANY = /(^|\/)(secrets\/|\.env(rc|\.(?!example$)[^/]*)?$)/i
 const PROTECTED_TEXT = `${PROTECTED.join(', ')}, any secrets/ folder or .env file`

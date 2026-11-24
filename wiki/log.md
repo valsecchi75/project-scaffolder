@@ -52,3 +52,12 @@ SHIP AFTER FIXES, no CRITICAL. Fixed: build-secrets.sh found the project from th
 
 ## [2026-11-23] fix | T-008, v4.1.2 (prepared)
 Build scan tested in a worktree and with a masked key file; `.env.example` names cross-checked against `secrets/`; sandbox behaviour checked in the docs (Read deny reaches child processes on macOS, Linux, WSL2; native Windows unsandboxed; hooks outside; a denied file's appearance undocumented), so a sandboxed release takes the verdict from the user's terminal. DEC-026.
+
+## [2026-11-24] review | Claude Code changelog 2.1.331 and Claude Ship
+`optionalDependencies` (watch), Claude Ship: `/ship`, `/steward`, PR Steward, Claude Approvals. Three small changes proposed under Candidates in claude-code-changelog.md; none adopted yet.
+
+## [2026-11-24] release | v4.1.3 (prepared)
+Claude Ship adopted as DEC-027: approval policy protected in the improve loop, `/ship` named at the end of `/5-release`, `/setup-check` item 11. Branch `claude-ship-review`; not pushed.
+
+## [2026-11-24] doc | UPGRADING.md and a self-sufficient v3 upgrade
+`skills/foundation/upgrade.md` checks the tree and the work in progress first, creates `wiki/todo.md`, writes the v3 to v4 command map and the new rules into `wiki/handoff.md`. `UPGRADING.md` at the root is the public guide (update commands, the one command per project, an optional read-only prompt). Part of v4.1.3.

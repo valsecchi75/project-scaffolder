@@ -1,8 +1,8 @@
 # Claude Code changelog — reviewed for the plugin
-
+> last-verified: 2026-11-24
 > last-verified: 2026-11-23
 
-**Last changelog version reviewed: 2.1.330** (entries 2.1.321 to 2.1.330 read on 2026-11-23; checked again at the start of the v4.1.1 session, same day: no newer entry). Installed version at that check: 2.1.329.
+**Last changelog version reviewed: 2.1.331** (entries 2.1.321 to 2.1.330 read on 2026-11-23; 2.1.331 and the Claude Ship announcement read on 2026-11-24). Installed version at that check: 2.1.329.
 
 Source: https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md. At the start of each session, read only the entries after the version above, then update this page (see `CLAUDE.md`).
 
@@ -12,6 +12,10 @@ Impact: `adopt` (use it now) · `adapt` (change the plugin) · `watch` (may matt
 
 | Version | Change | Impact | Notes |
 |---|---|---|---|
+| 2.1.331 | `optionalDependencies` in plugin manifests: plugins installed with this one that can be disabled or uninstalled on their own | watch | The two companion plugins (`interfaces`, `web-design-skills`) are really optional (design-studio continues without them). Candidate to move from `dependencies`; needs 2.1.331 to validate (installed here: 2.1.329) |
+| 2.1.331 | Managed `extraKnownMarketplaces` auto-update by default from 2026-11-30; a partial plugin folder after a failed update no longer loads | no impact | |
+| 2.1.331 | Code Mode on Bedrock, Vertex, Foundry in terminal sessions | no impact | `/setup-check` item 10 already names the user-settings switch |
+| 2.1.330 | Claude Ship (article 2026-11-23, docs `code.claude.com/docs/en/claude-ship`, `ship-command`, `pr-steward`, `approvals`): `/ship` (skill `ship-local`: commit, push, open the PR, `/code-review`, watch; the user merges) and `/steward`, typed by the user only, CLI, GitHub, `gh` 2.63+; PR Steward (cloud, Team and Enterprise, pushes fixes, reads `.claude/skills/steward/SKILL.md`); Claude Approvals (`.claude/approvals.yml`, classifiers in `.claude/classifiers/`) | adapt | v4.1.3, DEC-027; see "Claude Ship" under Candidates. `/ship` runs locally, so the secrets guard and the destructive-command guard still judge its git calls |
 | 2.1.330 | `claude plugin install --json` gains fields; `/mcp` groups plugin servers | no impact | |
 | 2.1.329 | `/code-review` reports only bugs and CLAUDE.md violations; cleanups moved to `/simplify` | adopt | `/5-release` offers `/code-review <last tag>..HEAD` and starts it on a yes (Claude can start it since 2.1.246) |
 | 2.1.329 | A failing PreToolUse hook no longer blocks unless `onFailure: "block"` | adopt | v4.1.0: the three PreToolUse guards set `onFailure: "block"` (DEC-013); the other hooks stay fail-open |
@@ -55,3 +59,5 @@ Impact: `adopt` (use it now) · `adapt` (change the plugin) · `watch` (may matt
 - **Monitors** (`monitors/monitors.json`): not needed yet.
 - **Mod pane** (`modules` in `hooks/hooks.json`): an optional phase pane for VS Code; the band above the prompt does not render there (DEC-011).
 - Adopted since: plugin evals (`evals/`, DEC-012), workflows (`workflows/`, DEC-010) and `onFailure: "block"` on the guards (DEC-013).
+- **Claude Ship**: adopted in v4.1.3 (DEC-027): the improve loop protects `.claude/approvals.yml` and `.claude/classifiers/`; `/5-release` names `/ship` as the user's way to push on GitHub; `/setup-check` item 11. Not planned: generating an approvals policy or a steward skill in `/2-foundation` (Team and Enterprise only, billed per token, a team decision). Not documented, so `watch`: whether a cloud PR Steward session loads the repository's plugins and their hooks.
+- **`optionalDependencies`** (2.1.331) for the two companion plugins: validate once the installed Claude Code is 2.1.331 or later.
